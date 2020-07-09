@@ -10,8 +10,16 @@ A generic library for laravel. Just fork and modify it.
 
 "repositories": [
     {
-        "type": "git",
-        "url": "git@git.codificar.com.br:react-components/laravel-generic-lib.git"
+        "type":"package",
+        "package": {
+            "name": "codificar/contactform",
+            "version":"master",
+            "source": {
+                "url": "https://git.codificar.com.br/react-components/laravel-generic-lib.git",
+                "type": "git",
+                "reference":"master"
+            }
+        }
     }
 ],
 
