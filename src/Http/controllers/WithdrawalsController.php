@@ -1,23 +1,23 @@
 <?php
 
-namespace Codificar\Generic\Http\Controllers;
+namespace Codificar\Withdrawals\Http\Controllers;
 
-use Codificar\Generic\Models\Generic;
+use Codificar\Withdrawals\Models\Withdrawals;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
 
 
-class GenericController extends Controller {
+class WithdrawalsController extends Controller {
 
     public function index()
     {
-       return view('generic::contact');
+       return view('withdrawals::contact');
     }
 
     public function sendMail(Request $request)
     {
-        Generic::create($request->all());
+        Withdrawals::create($request->all());
         return redirect(route('contact'))->with(['message' => 'Thank you, your mail has been sent succesfully.']);
     }
 

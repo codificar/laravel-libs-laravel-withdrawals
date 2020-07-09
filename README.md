@@ -1,5 +1,5 @@
-# laravel-generic-lib
-A generic library for laravel. Just fork and modify it.
+# laravel-withdrawals-lib
+A withdrawals library for laravel. Just fork and modify it.
 
 ## Getting Started
 
@@ -15,7 +15,7 @@ A generic library for laravel. Just fork and modify it.
             "name": "codificar/contactform",
             "version":"master",
             "source": {
-                "url": "https://git.codificar.com.br/react-components/laravel-generic-lib.git",
+                "url": "https://git.codificar.com.br/react-components/laravel-withdrawals-lib.git",
                 "type": "git",
                 "reference":"master"
             }
@@ -27,7 +27,7 @@ A generic library for laravel. Just fork and modify it.
 
 "require": {
     // ADD this
-    "codificar/generic": "dev-master",
+    "codificar/withdrawals": "dev-master",
 },
 
 ```
@@ -41,14 +41,14 @@ A generic library for laravel. Just fork and modify it.
         ],
         "psr-4": {
             // Add your Lib here
-            "Codificar\\Generic\\": "vendor/codificar/generic/src",
+            "Codificar\\Withdrawals\\": "vendor/codificar/withdrawals/src",
             "App\\": "app/"
         }
     },
     "autoload-dev": {
         "psr-4": {
             // Add your Lib here
-            "Codificar\\Generic\\": "vendor/codificar/generic/src",
+            "Codificar\\Withdrawals\\": "vendor/codificar/withdrawals/src",
             "Tests\\": "tests/"
         }
     },
@@ -65,7 +65,7 @@ composer dump-autoload -o
 'providers' => [
          ...,
             // The new package class
-            Codificar\Generic\GenericServiceProvider::class,
+            Codificar\Withdrawals\WithdrawalsServiceProvider::class,
         ],
 ```
 - Migrate the database tables
