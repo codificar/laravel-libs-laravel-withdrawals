@@ -1,5 +1,5 @@
 {
-    "name": "codificar/contactform",
+    "name": "codificar/generic",
     "description": "A generic library for laravel. Just fork and modify it.",
     "authors": [{
         "name": "Codificar",
@@ -8,7 +8,7 @@
     "require": {},
     "autoload": {
         "psr-4": {
-            "Codificar\\Contactform\\": "src/"
+            "Codificar\\Generic\\": "src/"
         }
     }
 }

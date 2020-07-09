@@ -19,7 +19,7 @@ A generic library for laravel. Just fork and modify it.
 
 "require": {
     // ADD this
-    "codificar/contactform": "dev-master",
+    "codificar/generic": "dev-master",
 },
 
 ```
@@ -33,14 +33,14 @@ A generic library for laravel. Just fork and modify it.
         ],
         "psr-4": {
             // Add your Lib here
-            "Codificar\\Contactform\\": "packages/codificar/contactform/src",
+            "Codificar\\Generic\\": "vendor/codificar/generic/src",
             "App\\": "app/"
         }
     },
     "autoload-dev": {
         "psr-4": {
             // Add your Lib here
-            "Codificar\\Contactform\\": "packages/codificar/contactform/src",
+            "Codificar\\Generic\\": "vendor/codificar/generic/src",
             "Tests\\": "tests/"
         }
     },
@@ -57,7 +57,7 @@ composer dump-autoload -o
 'providers' => [
          ...,
             // The new package class
-            Codificar\Contactform\ContactFormServiceProvider::class,
+            Codificar\Generic\GenericServiceProvider::class,
         ],
 ```
 - Migrate the database tables

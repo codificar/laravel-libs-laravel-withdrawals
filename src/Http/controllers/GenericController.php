@@ -1,23 +1,23 @@
 <?php
 
-namespace Codificar\Contactform\Http\Controllers;
+namespace Codificar\Generic\Http\Controllers;
 
-use Codificar\Contactform\Models\ContactForm;
+use Codificar\Generic\Models\Generic;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
 
 
-class ContactFormController extends Controller {
+class GenericController extends Controller {
 
     public function index()
     {
-       return view('contactform::contact');
+       return view('generic::contact');
     }
 
     public function sendMail(Request $request)
     {
-        ContactForm::create($request->all());
+        Generic::create($request->all());
         return redirect(route('contact'))->with(['message' => 'Thank you, your mail has been sent succesfully.']);
     }
 

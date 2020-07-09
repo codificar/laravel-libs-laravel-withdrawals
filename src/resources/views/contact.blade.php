@@ -17,7 +17,7 @@
              </div>
          @endif
  
-       <h3>Contact Us</h3>
+       <h3>Contact s</h3>
         @if(Session::has('message'))
         messssssss
           {{Session::get("message")}}

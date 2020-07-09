@@ -1,6 +1,6 @@
 
 <?php
-Route::group(['namespace' => 'Codificar\Contactform\Http\Controllers', 'middleware' => ['web']], function(){
-    Route::get('contact', 'ContactFormController@index');
-    Route::post('contact', 'ContactFormController@sendMail')->name('contact');
+Route::group(['namespace' => 'Codificar\Generic\Http\Controllers', 'middleware' => ['web']], function(){
+    Route::get('contact', 'GenericController@index');
+    Route::post('contact', 'GenericController@sendMail')->name('contact');
 });

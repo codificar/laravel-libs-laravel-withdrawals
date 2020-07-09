@@ -1,8 +1,8 @@
 <?php
-namespace Codificar\Contactform\Models;
+namespace Codificar\Generic\Models;
 use Illuminate\Database\Eloquent\Model;
 
-class ContactForm extends Model
+class Generic extends Model
 {
     protected $guarded = [];
 
