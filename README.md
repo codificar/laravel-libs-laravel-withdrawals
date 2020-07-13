@@ -15,7 +15,7 @@ A withdrawals library for laravel. Just fork and modify it.
             "name": "codificar/contactform",
             "version":"master",
             "source": {
-                "url": "https://git.codificar.com.br/react-components/laravel-withdrawals-lib.git",
+                "url": "https://git.codificar.com.br/laravel-libs/laravel-withdrawals-lib.git",
                 "type": "git",
                 "reference":"master"
             }
@@ -80,4 +80,6 @@ And finally, start the application by running:
 php artisan serve
 ```
 
-Visit http://localhost:8000/contact in your browser to view the demo.
+Routes:
+libs/withdrawals/add
+libs/withdrawals/report
