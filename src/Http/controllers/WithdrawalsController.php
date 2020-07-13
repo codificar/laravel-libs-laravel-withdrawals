@@ -6,11 +6,15 @@ use Codificar\Withdrawals\Models\Withdrawals;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
+//FormRequest
+use Codificar\Withdrawals\Http\Requests\ProviderAddWithdrawalFormRequest;
+
 //Resource
 use Codificar\Withdrawals\Http\Resources\ProviderWithdrawalsReportResource;
+use Codificar\Withdrawals\Http\Resources\ProviderAddWithdrawalResource;
 
-use Input;
-use Provider;
+use Input, Validator;
+use Provider, Settings, Ledger, Finance;
 class WithdrawalsController extends Controller {
 
     public function getWithdrawalsReport()
@@ -25,6 +29,39 @@ class WithdrawalsController extends Controller {
 		return new ProviderWithdrawalsReportResource([
 			'withdrawals_report' => $withdrawals_report
 		]);
+    }
+
+    public function addWithDraw(ProviderAddWithdrawalFormRequest $request)
+    {
+        // Get the params
+        $providerId = $request->get('provider_id');
+        $value = $request->get('withdraw_value');
+        $bankAccountId = $request->get('bank_account_id');
+
+        // Get the ledger
+        $ledger = Ledger::findByProviderId($providerId);
+        
+        // Get the current balance from ledger. 
+        $currentBalance = Finance::sumValueByLedgerId($ledger->id);
+
+        // Get the settings of withdraw
+        $withDrawSettings = array(
+            'with_draw_enabled' => Settings::getWithDrawEnabled(),
+            'with_draw_max_limit' => Settings::getWithDrawMaxLimit(),
+            'with_draw_min_limit' => Settings::getWithDrawMinLimit(),
+            'with_draw_tax' => Settings::getWithDrawTax()
+        );
+        
+
+        // Return data
+		return new ProviderAddWithdrawalResource([
+            'ledger'            => $ledger,
+            'withdraw_value'    => $value,
+            'bank_account_id'   => $bankAccountId,
+            'current_balance'   => $currentBalance,
+            'withdraw_settings' => $withDrawSettings
+		]);
+
     }
 
 }
