@@ -11,6 +11,10 @@ class WithdrawalsServiceProvider extends ServiceProvider {
         $this->loadViewsFrom(__DIR__.'/resources/views', 'withdrawals');
 
         $this->loadMigrationsFrom(__DIR__.'/Database/migrations');
+
+        $this->publishes([
+            __DIR__.'/../public/js' => public_path('vendor/codificar'),
+        ], 'public');
     }
 
     public function register()
