@@ -19,11 +19,11 @@
 @section('content')
 	<div id="VueJs">
 		
-		<withdrawalsreport 
+		<withdrawalssettings 
 			id="{{ $id }}"
 			
 		>
-		</withdrawalsreport>
+		</withdrawalssettings>
 		
 	</div>
 
@@ -42,6 +42,6 @@
 
 
 
-<script src="{{ elixir('js/main.vue.js') }}"> </script> 
+<script src="{{ elixir('vendor/codificar/withdrawals/withdrawals.vue.js') }}"> </script> 
        
 @stop

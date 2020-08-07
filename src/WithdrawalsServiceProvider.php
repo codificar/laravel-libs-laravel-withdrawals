@@ -13,8 +13,8 @@ class WithdrawalsServiceProvider extends ServiceProvider {
         $this->loadMigrationsFrom(__DIR__.'/Database/migrations');
 
         $this->publishes([
-            __DIR__.'/../public/js' => public_path('vendor/codificar'),
-        ], 'public');
+            __DIR__.'/../public/js' => public_path('vendor/codificar/withdrawals'),
+        ], 'public_vuejs_libs');
     }
 
     public function register()
