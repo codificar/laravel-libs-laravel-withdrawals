@@ -13,7 +13,7 @@ use Codificar\Withdrawals\Http\Requests\ProviderAddWithdrawalFormRequest;
 use Codificar\Withdrawals\Http\Resources\ProviderWithdrawalsReportResource;
 use Codificar\Withdrawals\Http\Resources\ProviderAddWithdrawalResource;
 
-use Input, Validator;
+use Input, Validator, View;
 use Provider, Settings, Ledger, Finance;
 class WithdrawalsController extends Controller {
 
@@ -62,6 +62,20 @@ class WithdrawalsController extends Controller {
             'withdraw_settings' => $withDrawSettings
 		]);
 
+    }
+
+     /**
+     * View the withdrawals report
+     * 
+     * @return View
+     */
+    public function getCnabSettings() {
+
+        return View::make('withdrawals::cnab')
+                            ->with([
+                                'id' => 'teste'
+                            ]);
+    
     }
 
 }
