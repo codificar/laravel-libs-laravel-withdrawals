@@ -80,16 +80,6 @@ export default {
 	
 	created() {
 		this.id = this.Id;
-		this.types = JSON.parse(this.FinanceTypes); //Types of transactions
-		this.holder = JSON.parse(this.Holder); //User/Provider Name
-		this.ledger = JSON.parse(this.Ledger); //User/Provider Object
-		this.balance = JSON.parse(this.Balance);
-		this.total = 0;
-		this.current_balance = this.totalize(this.balance.detailed_balance);
-		this.bank_accounts = JSON.parse(this.BankAccounts); // User/provider BankAccounts
-		this.banks = JSON.parse(this.BankList); // Banks list
-		this.account_types = JSON.parse(this.AccountTypes); // Account types list
-		this.with_draw_settings = JSON.parse(this.WithDrawSettings); // System withdraw configs
 	}
 };
 </script>
@@ -170,13 +160,6 @@ export default {
                                             <button v-show="with_draw_settings.with_draw_enabled == true" v-on:click="showModalRequestWithdraw" class="btn btn-info" type="button">
                                                 <i class="fa fa-money"></i> {{ trans('finance.request_withdraw') }}
                                             </button>
-                                            <div>
-                                            <hr>
-                                                <i class="fa fa-money"></i>
-                                                <strong>{{ trans('finance.available_balance') }} : </strong>
-                                                <span v-if="balance.total_balance >= 0" class="text-success">{{ currency_format(balance.total_balance, currencySymbol) }}</span>
-                                                <span v-else class="text-danger">{{ currency_format(balance.total_balance, currencySymbol) }}</span>
-									        </div>
                                         </div>
                                     </div>
 								</form>
@@ -226,7 +209,6 @@ export default {
                                 <td>{{ entry.receipt }}</td>
                                 <td><p v-if="((new Date(entry.compensation_date)).toLocaleString().split(' ')[0]) != '31/12/1969'">{{ (new Date(entry.compensation_date)).toLocaleString().split(" ")[0] }}</p></td>
 								<td>{{ (new Date(entry.compensation_date)).toTimeString().split(":")[0] }}:{{ (new Date(entry.compensation_date)).toTimeString().split(":")[1] }}</td>
-								<td><p class="text-success">{{ currency_format(entry.value, currencySymbol) }}</p></td>
 							</tr>
 						</table>
 					</div>

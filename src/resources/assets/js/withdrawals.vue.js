@@ -7,7 +7,7 @@ import Vue from 'vue';
 import VueResource from 'vue-resource';
 
 //Finance Account statement
-import FinancialAccountStatement from './pages/financial_account_statement.vue';
+import WithdrawalsSettings from './pages/withdrawals_settings.vue';
 
 
 Vue.use(VueResource);
@@ -30,7 +30,7 @@ new Vue({
     },
 
     components: {
-        financialaccountstatement: FinancialAccountStatement
+        withdrawalssettings: WithdrawalsSettings
     },
 
     created: function () {

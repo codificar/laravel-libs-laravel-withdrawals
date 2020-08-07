@@ -117,8 +117,8 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_vue__ = __webpack_require__(1);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_vue___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_vue__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_vue_resource__ = __webpack_require__(10);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__pages_financial_account_statement_vue__ = __webpack_require__(12);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__pages_financial_account_statement_vue___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2__pages_financial_account_statement_vue__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__pages_withdrawals_settings_vue__ = __webpack_require__(12);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__pages_withdrawals_settings_vue___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2__pages_withdrawals_settings_vue__);
 window.vue = __webpack_require__(1);
 
 __webpack_require__(8);
@@ -148,7 +148,7 @@ new __WEBPACK_IMPORTED_MODULE_0_vue___default.a({
     data: {},
 
     components: {
-        financialaccountstatement: __WEBPACK_IMPORTED_MODULE_2__pages_financial_account_statement_vue___default.a
+        withdrawalssettings: __WEBPACK_IMPORTED_MODULE_2__pages_withdrawals_settings_vue___default.a
     },
 
     created: function created() {}
@@ -31369,7 +31369,7 @@ var Component = normalizeComponent(
   __vue_scopeId__,
   __vue_module_identifier__
 )
-Component.options.__file = "src/resources/assets/js/pages/financial_account_statement.vue"
+Component.options.__file = "src/resources/assets/js/pages/withdrawals_settings.vue"
 
 /* hot reload */
 if (false) {(function () {
@@ -31378,9 +31378,9 @@ if (false) {(function () {
   if (!hotAPI.compatible) return
   module.hot.accept()
   if (!module.hot.data) {
-    hotAPI.createRecord("data-v-1cf8c8af", Component.options)
+    hotAPI.createRecord("data-v-aef60ce8", Component.options)
   } else {
-    hotAPI.reload("data-v-1cf8c8af", Component.options)
+    hotAPI.reload("data-v-aef60ce8", Component.options)
   }
   module.hot.dispose(function (data) {
     disposed = true
@@ -31569,16 +31569,6 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 	mounted: function mounted() {},
 	created: function created() {
 		this.id = this.Id;
-		this.types = JSON.parse(this.FinanceTypes); //Types of transactions
-		this.holder = JSON.parse(this.Holder); //User/Provider Name
-		this.ledger = JSON.parse(this.Ledger); //User/Provider Object
-		this.balance = JSON.parse(this.Balance);
-		this.total = 0;
-		this.current_balance = this.totalize(this.balance.detailed_balance);
-		this.bank_accounts = JSON.parse(this.BankAccounts); // User/provider BankAccounts
-		this.banks = JSON.parse(this.BankList); // Banks list
-		this.account_types = JSON.parse(this.AccountTypes); // Account types list
-		this.with_draw_settings = JSON.parse(this.WithDrawSettings); // System withdraw configs
 	}
 });
 
@@ -31867,43 +31857,7 @@ var render = function() {
                                     "\n                                            "
                                 )
                               ]
-                            ),
-                            _vm._v(" "),
-                            _c("div", [
-                              _c("hr"),
-                              _vm._v(" "),
-                              _c("i", { staticClass: "fa fa-money" }),
-                              _vm._v(" "),
-                              _c("strong", [
-                                _vm._v(
-                                  _vm._s(
-                                    _vm.trans("finance.available_balance")
-                                  ) + " : "
-                                )
-                              ]),
-                              _vm._v(" "),
-                              _vm.balance.total_balance >= 0
-                                ? _c("span", { staticClass: "text-success" }, [
-                                    _vm._v(
-                                      _vm._s(
-                                        _vm.currency_format(
-                                          _vm.balance.total_balance,
-                                          _vm.currencySymbol
-                                        )
-                                      )
-                                    )
-                                  ])
-                                : _c("span", { staticClass: "text-danger" }, [
-                                    _vm._v(
-                                      _vm._s(
-                                        _vm.currency_format(
-                                          _vm.balance.total_balance,
-                                          _vm.currencySymbol
-                                        )
-                                      )
-                                    )
-                                  ])
-                            ])
+                            )
                           ])
                         : _vm._e()
                     ])
@@ -32031,19 +31985,6 @@ var render = function() {
                                       .split(":")[1]
                                   )
                               )
-                            ]),
-                            _vm._v(" "),
-                            _c("td", [
-                              _c("p", { staticClass: "text-success" }, [
-                                _vm._v(
-                                  _vm._s(
-                                    _vm.currency_format(
-                                      entry.value,
-                                      _vm.currencySymbol
-                                    )
-                                  )
-                                )
-                              ])
                             ])
                           ]
                         )
@@ -32071,7 +32012,7 @@ module.exports = { render: render, staticRenderFns: staticRenderFns }
 if (false) {
   module.hot.accept()
   if (module.hot.data) {
-    require("vue-hot-reload-api")      .rerender("data-v-1cf8c8af", module.exports)
+    require("vue-hot-reload-api")      .rerender("data-v-aef60ce8", module.exports)
   }
 }
 
