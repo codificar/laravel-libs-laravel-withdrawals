@@ -5,16 +5,23 @@ namespace Codificar\Withdrawals\Http\Controllers;
 use Codificar\Withdrawals\Models\Withdrawals;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
+use File;
 
 //FormRequest
 use Codificar\Withdrawals\Http\Requests\ProviderAddWithdrawalFormRequest;
+use Codificar\Withdrawals\Http\Requests\SaveWithdrawalSettingsFormRequest;
+use Codificar\Withdrawals\Http\Requests\ConfirmWithdrawFormRequest;
 
 //Resource
 use Codificar\Withdrawals\Http\Resources\ProviderWithdrawalsReportResource;
 use Codificar\Withdrawals\Http\Resources\ProviderAddWithdrawalResource;
+use Codificar\Withdrawals\Http\Resources\ConfirmWithdrawResource;
+use Codificar\Withdrawals\Http\Resources\saveCnabSettingsResource;
 
-use Input, Validator, View;
-use Provider, Settings, Ledger, Finance;
+use Input, Validator, View, Response;
+use Provider, Settings, Ledger, Finance, Bank, LedgerBankAccount;
+
 class WithdrawalsController extends Controller {
 
     public function getWithdrawalsReport()
@@ -71,11 +78,296 @@ class WithdrawalsController extends Controller {
      */
     public function getCnabSettings() {
 
+        $settings = Withdrawals::getWithdrawalsSettings();
+
         return View::make('withdrawals::cnab')
                             ->with([
-                                'id' => 'teste'
+                                'settings' => $settings
                             ]);
     
     }
+
+    public function saveCnabSettings(SaveWithdrawalSettingsFormRequest $request)
+    {
+        \Log::debug($request->settings['rem_bank_code']);
+
+        // Return data
+		return new saveCnabSettingsResource([
+            "message" => 'sucess',
+            "rem_company_name" => $request->settings['rem_company_name'],
+            "rem_cpf_or_cnpj" => $request->settings['rem_cpf_or_cnpj'],
+            "rem_document" => $request->settings['rem_document'],
+            "rem_agency" => $request->settings['rem_agency'],
+            "rem_agency_dv" => $request->settings['rem_agency_dv'],
+            "rem_account" => $request->settings['rem_account'],
+            "rem_account_dv" => $request->settings['rem_account_dv'],
+            "rem_bank_code" => $request->settings['rem_bank_code'],
+            "rem_agreement_number" => $request->settings['rem_agreement_number'],
+            "rem_transfer_type" => $request->settings['rem_transfer_type'],
+		]);
+    }
+
+
+
+
+    /**
+     * View the withdrawals report
+     * 
+     * @return View
+     */
+    public function getWithdrawalsReportWeb() {
+       
+        $type = \Request::segment(1);
+        \Log::debug($type);
+        switch ($type) {
+            case Finance::TYPE_USER:
+                $id = \Auth::guard("clients")->user()->id;
+                $holder = User::find($id);
+                $notfound = 'user_panel.userLogin';
+                $enviroment = 'user';
+                break;
+            case Finance::TYPE_PROVIDER:
+                $id = \Auth::guard("providers")->user()->id;
+                $holder = Provider::find($id);
+                $notfound = 'provider_panel.login';
+                $enviroment = 'provider';
+                break;
+            case Finance::TYPE_CORP:
+                $admin_id = \Auth::guard("web")->user()->id;
+                $holder = AdminInstitution::getUserByAdminId($admin_id);
+                $id = $holder->id;
+                $notfound = 'corp.login';
+                $enviroment = 'corp';
+                break;
+            case Finance::TYPE_ADMIN:
+                $admin_id = \Auth::guard("web")->user()->id;
+                $holder = null;
+                $id = null;
+                $notfound = 'corp.login';
+                $enviroment = 'admin';
+                break;
+        }
+        if (($holder && $holder->ledger) || $type == Finance::TYPE_ADMIN) {
+            
+            if(isset($holder->ledger->id) && $holder->ledger->id) {
+                $ledger_id = $holder->ledger->id;
+            } else {
+                $ledger_id = null;
+            }
+            $balance = Finance::getWithdrawalsSummary($ledger_id, $enviroment);
+            if (Input::get('submit') && Input::get('submit') == 'Download_Report') {
+                return $this->downloadFinancialReport($type, $holder, $balance);
+            } else {
+                $types = Finance::TYPES; //Prepares Finance types array to be used on vue component
+                $banks = Bank::orderBy('code', 'asc')->get(); //List of banks
+                $account_types = LedgerBankAccount::getAccountTypes(); //List of AccountTypes
+
+                $withDrawSettings = array(
+                    'with_draw_enabled' => Settings::getWithDrawEnabled(),
+                    'with_draw_max_limit' => Settings::getWithDrawMaxLimit(),
+                    'with_draw_min_limit' => Settings::getWithDrawMinLimit(),
+                    'with_draw_tax' => Settings::getWithDrawTax()
+                );
+
+                return View::make('withdrawals::withdrawals_report')
+                                ->with([
+                                    'id' => $id,
+                                    'enviroment' => $enviroment,
+                                    'user_provider_type'  => $enviroment,
+                                    'holder' => isset($holder->first_name) ? $holder->first_name . ' ' . $holder->last_name : '',
+                                    'ledger' => $holder,
+                                    'balance' => $balance,
+                                    'types' => $types,
+                                    'bankaccounts' => isset($holder->ledger->bankAccounts) ? $holder->ledger->bankAccounts : '',
+                                    'banks' => $banks,
+                                    'account_types' => $account_types,
+                                    'withdrawsettings' => $withDrawSettings
+                ]);
+            }
+        } else { //if($holder && $holder->ledger)
+            return View::make($notfound)->with('title', trans('adminController.page_not_found'))->with('page', trans('adminController.page_not_found'));
+        }
+    }
+
+    public function confirmWithdraw(ConfirmWithdrawFormRequest $request) {
+
+        //get date
+        $date = $request->date;
+        
+        //get picture
+        $fileWithdraw = $request->file_withdraw;
+       
+        // get nome
+        $file_name = time();
+		$file_name .= rand();
+		$file_name = sha1($file_name);
+
+        //get file extension
+        $ext = $fileWithdraw->getClientOriginalExtension();
+
+        //Upload
+        $fileWithdraw->move(public_path() . "/uploads", $file_name . "." . $ext);
+        $local_url = $file_name . "." . $ext;
+
+        // Upload to S3
+        $s3_url = upload_to_s3($file_name, $local_url);
+
+        // save image in withdraw table and confirm withdraw
+        Withdrawals::addWithdrawReceiptAndConfirm($request->withdraw_id, $s3_url);
+
+
+        // Return data
+		return new ConfirmWithdrawResource([
+            "message" => 'sucess',
+            "link" => $s3_url
+		]);
+    }
+
+	public function upload_to_s3($file_name, $local_url)
+    {
+        // Upload to S3
+        if (Settings::findByKey('s3_bucket') != "") {
+            $s3 = App::make('aws')->get('s3');
+            $pic = $s3->putObject(array(
+                'Bucket' => Settings::findByKey('s3_bucket'),
+                'Key' => $file_name,
+                'SourceFile' => public_path() . "/uploads/" . $local_url
+            ));
+    
+            $s3->putObjectAcl(array(
+                'Bucket' => Settings::findByKey('s3_bucket'),
+                'Key' => $file_name,
+                'ACL' => 'public-read'
+            ));
+    
+            $s3_url = $s3->getObjectUrl(Settings::findByKey('s3_bucket'), $file_name);
+        } else {
+            $s3_url = asset_url() . '/uploads/' . $local_url;
+        }
+        return $s3_url;
+    }
+    
+
+
+
+
+    //
+    /**
+	 *  Create new user Bank Account
+     * 
+     * 
+	 */
+	public function createUserBankAccount() {
+        $userId = Input::get('user_id');
+        $providerId = Input::get('provider_id');
+		$ledgerId = Input::get('ledger_id');
+
+		/**conta bancária*/
+		$holder = Input::get('holder');
+		$document = Input::get('document');
+		$document = preg_replace('/\D/', '', $document); //deixa apenas numeros
+		$bankId = Input::get('bank_id');
+		$agency = Input::get('agency');
+		$agency_digit = Input::get('agency_digit');
+		$account = Input::get('account');
+		$accountDigit = Input::get('account_digit');
+		$optionDocument = Input::get('option_document');
+		$account_types = Input::get('account_type');
+		$validator = Validator::make(
+			array(
+				trans('finance.holder_name') 		=> $holder,
+				trans('finance.holder_document')	=> $document,
+				'bank_id' 							=> $bankId,
+				trans('finance.agency_number' )		=> $agency,
+				trans('finance.agency_digit') 		=> $agency_digit,
+				trans('finance.account_number') 	=> $account,
+				trans('finance.account_digit')	 	=> $accountDigit,
+				'option_document'					=> $optionDocument,
+			),
+			array(
+				trans('finance.holder_name') 		=> 'required',
+				trans('finance.holder_document') 	=> 'required',
+				'bank_id' 							=> 'required',
+				trans('finance.agency_number') 		=> 'required',
+				trans('finance.agency_digit')		=> 'required',
+				trans('finance.account_number') 	=> 'required',
+				trans('finance.account_digit') 		=> 'required',
+				'option_document' 					=> 'required'
+			),
+			array(
+				trans('finance.holder_name' )		=> trans('user_provider_controller.holder_required'),
+				trans('finance.holder_document')	=> trans('user_provider_controller.document_required'),
+				'bank_id' 							=> trans('user_provider_controller.bank_required'),
+				trans('finance.agency_number')		=> trans('user_provider_controller.agency_required'),
+				trans('finance.agency_digit')		=> trans('user_provider_controller.agency_digit_required'),
+				trans('finance.account_number') 	=> trans('user_provider_controller.account_required'),
+				trans('finance.account_digit')	 	=> trans('user_provider_controller.account_digit_required'),
+				'option_document'				 	=> trans('user_provider_controller.option_document_required'),
+			)
+		);
+
+		if($optionDocument == LedgerBankAccount::INDIVIDUAL){
+			$validatorDocument = Validator::make(
+							array(
+								'cpf' => $document,
+							),
+							array(
+								'cpf' => 'cpf'
+							),
+							array(
+								'cpf' => trans('providerController.cpf_invalid')
+							)
+			);
+		}
+
+		else{
+			$validatorDocument = Validator::make(
+							array(
+								'cnpj' => $document,
+							),
+							array(
+								'cnpj' => 'cnpj'
+							),
+							array(
+								'cnpj' => trans('providerController.cnpj_invalid')
+							)
+			);
+
+        }
+        if ($validator->fails()) {
+			$errorMessages = $validator->messages()->all();
+			$responseArray = array('success' => false, 'error' => trans('accountController.invalid_input'), 'errorCode' => 401, 'messages' => $errorMessages);
+		}else if($validatorDocument->fails()){
+			$errorMessages = $validatorDocument->messages();
+			$responseArray = array('success' => false, 'error' => trans('accountController.invalid_input'), 'errorCode' => 401, 'messages' => $errorMessages);
+		} else {
+			// salvar informações da conta bancária
+			
+			$ledgerBankAccount = new LedgerBankAccount();
+            
+
+			$ledgerBankAccount->ledger_id = $ledgerId;
+			$ledgerBankAccount->holder = $holder;
+			$ledgerBankAccount->document = $document;
+			$ledgerBankAccount->bank_id = $bankId;
+			$ledgerBankAccount->agency = $agency;
+			$ledgerBankAccount->agency_digit = $agency_digit;
+			$ledgerBankAccount->account = $account;
+			$ledgerBankAccount->account_type = $account_types;
+			$ledgerBankAccount->account_digit = $accountDigit;
+			$ledgerBankAccount->recipient_id = 'empty';
+            $ledgerBankAccount->person_type = $optionDocument;
+            if ($userId > 0) 		$ledgerBankAccount->user_id = $userId;
+            if ($providerId > 0) 	$ledgerBankAccount->provider_id = $providerId;
+            $ledgerBankAccount->save();
+            
+
+			$responseArray = array('success' => true, 'bank_account' => $ledgerBankAccount);
+
+        }
+        $responseCode = 200;
+		$response = Response::json($responseArray, $responseCode);
+		return $response;
+	}
 
 }

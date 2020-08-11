@@ -1,220 +1,292 @@
 <script>
-
+import axios from "axios";
+import moment from "moment";
 export default {
-	props: [
-		"Id",
-		"Enviroment",
-		"WithdrawalsSummaryRoute",
-		"WithDrawRequestRoute",
-		"CreateBankAccountRoute",
-		"FinancialEntryRoute",
-		"FinanceTypes",
-		"Holder",
-		"Ledger",
-		"Balance",
-		"BankAccounts",
-		"BankList",
-		"AccountTypes",
-		"WithDrawSettings",
-		"currencySymbol"
-	],
-	data() {
-		return {
-			id: "",
-			types: "", // Gets financial types to make the select field and use in comparations
-			holder: "", // Name of the user
-			ledger: "",
-			type_entry: "0", //Select field default option
-			balance: "", // Object with all entries received from the controller : .detailed_balance .previous_balance and .current_balance
-			current_balance: 0, //Balance of filtered entries
-			banks: [],
-			account_types: [],
-			bank_account_id: 0,
-			bank_accounts: [],
-			with_draw_settings: [],
-			url: window.location.href,
-            status: 0,
-            receipt: 0,
-		};
-	},
-	components: {
+  props: [
+    "Settings",
+  ],
+  data() {
+    return {
+      settings: {},
+    };
+  },
+  methods: {
 
-	},
-	methods: {
-		//Calculates total balance from an array
-		totalize(balance) {
-			var totalizer = 0;
-			for (var i = 0; i < balance.length; i++) {
-				totalizer += parseFloat(balance[i].value);
-			}
-			return totalizer;
-		},
-		getWithdrawalsSummary(page = 1) {
-			// TODO getWithdrawalsSummary
-			console.log("aqui");
-			
-		},
-		downloadFinancialSummary() {
-			// TODO downloadFinancialSummary
-			console.log("download");
-		},
-		
-		ModalNewBankClosed(newBankAccount) {
-			if (newBankAccount != "" && newBankAccount.id != "") {
-				this.bank_accounts.push(newBankAccount);
-				this.bank_account_id = newBankAccount.id;
-			}
-			$("#modal-new-bank-account").modal("hide");
-			$("#modal-request-withdraw").modal("show");
-		},
-		reloadPage() {
-			this.$swal({
-					title: this.trans("finance.transaction_add_success"),
-					type: 'success'
-				}).then((result) => { location.reload(); } );
-		},
-	},
-	mounted() {
-		
-	},
+    setWithdrawalsSettings() {
+      this.$swal({
+        title: this.trans("withdrawals.save_question"),
+        type: "warning",
+        showCancelButton: true,
+        confirmButtonText: this.trans("withdrawals.yes"),
+        cancelButtonText: this.trans("withdrawals.no")
+      }).then(result => {
+        if (result.value) {
+          
+          new Promise((resolve, reject) => {
+            axios
+              .post("/admin/libs/cnab_settings/save", {
+                settings: this.settings
+              })
+              .then(response => {
+                console.log(response);
+                if (response.data.success) {
+                  this.$swal({
+                    title: this.trans("withdrawals.success_set_withdrawals"),
+                    type: "success"
+                  }).then(result => {
+						location.reload();
+                  });
+                } else {
+                  this.$swal({
+                    title: this.trans("withdrawals.failed_set_withdrawals"),
+                    html:
+                      '<label class="alert alert-danger alert-dismissable text-left">' +
+                      response.data.errors +
+                      "</label>",
+                    type: "error"
+                  }).then(result => {});
+                }
+              })
+              .catch(error => {
+                console.log(error);
+                reject(error);
+                return false;
+              });
+          });
+        }
+      });
+    }
 	
-	created() {
-		this.id = this.Id;
-	}
+  },
+  created() {
+	var aux;
+	var settingsJson = {};
+	this.Settings ? (aux = JSON.parse(this.Settings)) : null;
+	aux.forEach(function myFunction(item, index) {
+		settingsJson[item.key] = item.value
+	});
+	this.settings = settingsJson;
+
+  }
 };
 </script>
 <template>
-	<div>
+  <div>
+    <!-- Row -->
+    <div class="tab-content">
+      <div class="col-lg-12">
+        <div class="card card-outline-info">
+          <div class="card-header">
+            <h4 class="m-b-0 text-white">{{trans('withdrawals.rem_settings')}}</h4>
+          </div>
+          <div class="card-block">
+            <div class="row">
+              <form data-toggle="validator" class="col-lg-12" v-on:submit.prevent="setWithdrawalsSettings()">
+				
+				<div class="row">
+					<!-- Banco -->
+					<div class="col-md-6 col-sm-12">
+						<div class="form-group">
+							<label class="control-label">{{trans('withdrawals.rem_bank') }}</label>
+							<select
+								v-model="settings.rem_bank_code"
+								name="rem_bank_code"
+								class="select form-control"
+							>
+							<option
+								v-for="method in [
+									{
+										'value': '104', 
+										'name': 'Caixa'
+									},
+									{
+										'value': '01', 
+										'name': 'Banco do Brasil (em desenvolvimento)'
+									}
+								]"
+								v-bind:value="method.value"
+								v-bind:key="method.value"
+							>{{ method.name }}</option>
+							</select>
+						</div>
+					</div>
 
-		<div class="col-lg-12">
-			<div class="card card-outline-info">
-				<div class="card-header">
-					<h4 class="m-b-0 text-white">{{ trans('finance.withdrawals_report') }}</h4>
-				</div>
-				<div class="card-block">
-					<div class="row">
-						<div class="col-md-12">
-							<div class="box box-warning">
-								<div class="box-header">
-									<h3 class="box-title">
-										{{ holder }}
-									</h3>
-								</div>
-								<form id="filter-account-statement" method="get" v-bind:action="url ">
-									<div class="box-body">
-										
-                                        <div class="row">
-											
-											<div v-if="Enviroment == 'admin'" class="col-md-3">
-                                                <div class="form-group">
-													<div class="form-group">
-														<label for="name" class=" control-label">{{ trans('finance.name') }}*</label>
-														<input name="name" type="text" id="name" class="form-control input-lg" maxlenght="255" auto-focus="" :placeholder="trans('finance.name')">
-													</div>
-                                                </div>
-                                            </div>
-                                            <div v-if="Enviroment == 'admin'" class="col-md-3">
-                                                <div class="form-group">
-													<div class="form-group">
-														<label for="bank" class=" control-label">{{ trans('finance.bank') }}*</label>
-														<input name="bank" type="text" id="bank" class="form-control input-lg" maxlenght="255" auto-focus="" :placeholder="trans('finance.bank')">
-													</div>
-                                                </div>
-                                            </div>
-
-                                            <div class="col-md-3">
-                                                <div class="form-group">
-                                                    <!--Select transaction type filter-->
-                                                    <label for="giveName">{{trans('finance.status') }}</label>
-                                                    <select v-model="status" name="" class="select form-control">
-														<option value="0" selected="selected"></option>
-                                                        <option value="1">{{trans('finance.withdrawal_requested') }}</option>
-                                                        <option value="2">{{trans('finance.withdrawal_made') }}</option>
-                                                    </select>
-                                                </div>
-                                            </div>
-                                            <div class="col-md-3">
-                                                <div class="form-group">
-                                                    <!--Select transaction type filter-->
-                                                    <label for="giveName">{{trans('finance.receipt') }}</label>
-                                                    <select v-model="receipt" name="" class="select form-control">
-														<option value="0" selected="selected"></option>
-                                                        <option value="1">{{trans('finance.no') }}</option>
-                                                        <option value="2">{{trans('finance.yes') }}</option>
-                                                    </select>
-                                                </div>
-                                            </div>
-                                        </div>
-
-
-                                        
-										<!--/ end-row-->
-										<div class="box-footer pull-right">
-											<button v-on:click="downloadFinancialSummary" class="btn btn-info right" type="button">
-												<i class="mdi mdi-download"></i> {{trans('finance.download_withdrawals')}}</button>
-											<button v-on:click="getWithdrawalsSummary" class="btn btn-success right" type="button" value="Filter_Data">
-												<i class="fa fa-search"></i> {{ trans('finance.search') }}</button>
-										</div>
-
-                                        <div v-if="Enviroment != 'admin'">
-                                            <button v-show="with_draw_settings.with_draw_enabled == true" v-on:click="showModalRequestWithdraw" class="btn btn-info" type="button">
-                                                <i class="fa fa-money"></i> {{ trans('finance.request_withdraw') }}
-                                            </button>
-                                        </div>
-                                    </div>
-								</form>
-								<!--/ box-body -->
-							</div>
-							<!--/ box-warning -->
+					<!-- Codigo do convenio do banco -->
+					<div class="col-md-6 col-sm-12">
+						<div class="form-group">
+							<label class="control-label">{{trans('withdrawals.rem_agreement_number') }}</label>
+							<input
+								type="text"
+								class="form-control"
+								name="rem_agreement_number"
+								id="rem_agreement_number"
+								required
+								v-model="settings.rem_agreement_number"
+							/>
 						</div>
 					</div>
 				</div>
-			</div>
-		</div>
-		<div class="col-lg-12" v-if="!isEmpty(balance.detailed_balance)">
-			<div class="card">
-				<div class="card-block">
-					</h3>
-					<div class="card-block">
-						<table class="table table-bordered">
-							<tr>
-                                <th>{{ trans("finance.id") }}</th>
 
-                                <th>{{ trans("finance.name") }}</th>
-                                <th>{{ trans("finance.email") }}</th>
-                                <th>{{ trans("finance.bank") }}</th>
-                                <th>{{ trans("finance.agency") }}</th>
-                                <th>{{ trans("finance.account") }}</th>
-                                <th>{{ trans("finance.cpf") }}</th>
-                                <th>{{ trans("finance.status") }}</th>
-                                <th>{{ trans("finance.receipt") }}</th>
+				<div class="row">
+					<!-- Nome da empresa -->
+					<div class="col-md-6 col-sm-12">
+						<div class="form-group">
+							<label class="control-label">{{trans('withdrawals.rem_company_name') }}</label>
+							<input
+							type="text"
+							class="form-control"
+							name="rem_company_name"
+							id="rem_company_name"
+							required
+							v-model="settings.rem_company_name"
+							/>
+						</div>
+					</div>
 
-								<th>{{ trans("finance.finance_date") }}</th>
-								<th>{{ trans("finance.finance_time") }}</th>
-								<th>{{ trans("finance.finance_value") }}</th>
-							</tr>
-							<tr v-for="entry in balance.withdrawals_list" v-bind:key="entry.id" total=0>
-								<td>{{ entry.id }}</td>
-                                <td>{{	
-										(entry.provider_first_name || entry.user_first_name)
-										+ " " + 
-										(entry.provider_last_name  || entry.user_last_name)
-								}}</td>
-                                <td>{{ entry.provider_email || entry.user_email }}</td>
-                                <td>{{ entry.bank }}</td>
-                                <td>{{ entry.agency }}</td>
-                                <td>{{ entry.account }}</td>
-                                <td>{{ entry.document }}</td>
-                                <td>{{ entry.status }}</td>
-                                <td>{{ entry.receipt }}</td>
-                                <td><p v-if="((new Date(entry.compensation_date)).toLocaleString().split(' ')[0]) != '31/12/1969'">{{ (new Date(entry.compensation_date)).toLocaleString().split(" ")[0] }}</p></td>
-								<td>{{ (new Date(entry.compensation_date)).toTimeString().split(":")[0] }}:{{ (new Date(entry.compensation_date)).toTimeString().split(":")[1] }}</td>
-							</tr>
-						</table>
+					<!-- TED ou DOC -->
+					<div class="col-md-6 col-sm-12">
+						<div class="form-group">
+							<label class="control-label">{{trans('withdrawals.rem_transfer_type') }}</label>
+							<select
+								v-model="settings.rem_transfer_type"
+								name="rem_transfer_type"
+								class="select form-control"
+							>
+							<option
+								v-for="method in [
+									{
+										'value': 'ted', 
+										'name': 'TED'
+									},
+									{
+										'value': 'doc', 
+										'name': 'DOC'
+									}
+								]"
+								v-bind:value="method.value"
+								v-bind:key="method.value"
+							>{{ method.name }}</option>
+							</select>
+						</div>
 					</div>
 				</div>
-				<pagination :data="balance.detailed_balance" @pagination-change-page="getWithdrawalsSummary"></pagination>
-			</div>
-		</div>
-	</div>
+
+				<div class="row">
+					<!-- TIPO: CPF ou CNPJ -->
+					 <div class="col-md-6 col-sm-12">
+						<div class="form-group">
+							<label class="control-label">{{trans('withdrawals.rem_cpf_or_cnpj') }}</label>
+							<select
+								v-model="settings.rem_cpf_or_cnpj"
+								name="rem_cpf_or_cnpj"
+								class="select form-control"
+							>
+							<option
+								v-for="method in [
+									{
+										'value': 'cpf', 
+										'name': 'CPF'
+									},
+									{
+										'value': 'cnpj', 
+										'name': 'CNPJ'
+									}
+								]"
+								v-bind:value="method.value"
+								v-bind:key="method.value"
+							>{{ method.name }}</option>
+							</select>
+						</div>
+					</div>
+
+					<!-- Valor do CPF ou CNPJ -->
+					<div class="col-md-6 col-sm-12">
+						<div class="form-group">
+							<label class="control-label">{{trans('withdrawals.rem_document') }}</label>
+							<input
+							type="text"
+							class="form-control"
+							name="rem_document"
+							id="rem_document"
+							required
+							v-model="settings.rem_document"
+							/>
+						</div>
+					</div>
+				</div>
+
+				<div class="row">
+					<!-- Agencia -->
+					<div class="col-md-6 col-sm-12">
+						<div class="form-group">
+							<label class="control-label">{{trans('withdrawals.rem_agency') }}</label>
+							<input
+							type="text"
+							class="form-control"
+							name="rem_agency"
+							id="rem_agency"
+							required
+							v-model="settings.rem_agency"
+							/>
+						</div>
+					</div>
+
+					<!-- Digito da agencia -->
+					<div class="col-md-6 col-sm-12">
+						<div class="form-group">
+							<label class="control-label">{{trans('withdrawals.rem_agency_dv') }}</label>
+							<input
+							type="text"
+							class="form-control"
+							name="rem_agency_dv"
+							id="rem_agency_dv"
+							required
+							v-model="settings.rem_agency_dv"
+							/>
+						</div>
+					</div>
+				</div>
+
+
+				<div class="row">
+					<!-- Conta -->
+					<div class="col-md-6 col-sm-12">
+						<div class="form-group">
+							<label class="control-label">{{trans('withdrawals.rem_account') }}</label>
+							<input
+							type="text"
+							class="form-control"
+							name="rem_account"
+							id="rem_account"
+							required
+							v-model="settings.rem_account"
+							/>
+						</div>
+					</div>
+
+					<!-- Digito da conta -->
+					<div class="col-md-6 col-sm-12">
+						<div class="form-group">
+							<label class="control-label">{{trans('withdrawals.rem_account_dv') }}</label>
+							<input
+							type="text"
+							class="form-control"
+							name="rem_account_dv"
+							id="rem_account_dv"
+							required
+							v-model="settings.rem_account_dv"
+							/>
+						</div>
+					</div>
+				</div>
+
+				<button type="submmit" class="btn btn-success pull-right">{{trans('withdrawals.save')}}</button>
+              
+			  </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>

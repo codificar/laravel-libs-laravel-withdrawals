@@ -5,7 +5,10 @@ namespace Codificar\Withdrawals\Http\Resources;
 use Carbon\Carbon;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-use Finance, Bank;
+use Finance, LedgerBankAccount;
+
+use Codificar\Withdrawals\Models\Withdrawals;
+
 /**
  * Class ProviderAddWithdrawalResource
  *
@@ -51,9 +54,11 @@ class ProviderAddWithdrawalResource extends JsonResource {
 
          // Check if withdraw_value is NOT between max and min values allowed (less than min OR greater than max)
          else if ($value < $settings['with_draw_min_limit'] || $value > $settings['with_draw_max_limit'] ) {
+            $msgError =  'O valor minmo e ' . $settings['with_draw_min_limit'] . ' e o maximo ' . $settings['with_draw_max_limit'];
             return [
                 'success' => false,
-                'error' => 'O valor minmo e ' . $settings['with_draw_min_limit'] . ' e o maximo ' . $settings['with_draw_max_limit']
+                'messages' => [$msgError],
+                'error' => $msgError
             ];
         }
 
@@ -66,7 +71,7 @@ class ProviderAddWithdrawalResource extends JsonResource {
         }
 
         //Check if bank not exists.
-        else if (!Bank::find($bankAccountId)) {
+        else if (!LedgerBankAccount::find($bankAccountId)) {
             return [
                 'success' => false,
                 'error' => 'Dados bancarios nao existem'
@@ -76,13 +81,25 @@ class ProviderAddWithdrawalResource extends JsonResource {
         // Add withdrawal
         else {
             $value = -$value;
-            $return = Finance::createWithDrawRequest($ledger->id, $value, $bankAccountId, 0);
+
+            // Add withdraw debit in Finance table
+            $returnWithdraw = Finance::createWithDrawRequest($ledger->id, $value, $bankAccountId, null);
             
-            // If has tax
+            // Add withdraw Tax debit in Finance table
+            $returnTax = null;
             if ($settings['with_draw_tax'] > 0) {
                 $settings['with_draw_tax'] = -$settings['with_draw_tax'];
-                Finance::createCustomEntryWithBankAccountId($ledger->id, Finance::WITHDRAW, trans('finance.withdraw_tax'), $settings['with_draw_tax'], 0, $bankAccountId);
+                $returnTax = Finance::createCustomEntryWithBankAccountId($ledger->id, Finance::WITHDRAW, trans('finance.withdraw_tax'), $settings['with_draw_tax'], null, $bankAccountId);
             }
+
+            // Add withdraw in Withdraw table
+            $withdraw = new Withdrawals;
+            $withdraw->finance_withdraw_id = $returnWithdraw->id;
+            if($returnTax) {
+                $withdraw->finance_withdraw_tax_id = $returnTax->id;
+            }
+            $withdraw->type = "requested";
+            $withdraw->save();
 
             // Return data
             return [

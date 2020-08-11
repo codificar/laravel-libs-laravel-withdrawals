@@ -6,10 +6,10 @@
 <div class="row page-titles">
 	<div class="col-md-6 col-8 align-self-center">
 
-		<h3 class="text-themecolor m-b-0 m-t-0">{{ trans('finance.withdrawals_report') }}</h3>
+		<h3 class="text-themecolor m-b-0 m-t-0">{{ trans('libTans::withdrawals.withdrawals')}}</h3>
 		<ol class="breadcrumb">
-			<li class="breadcrumb-item"><a href="javascript:void(0)">{{ trans('dashboard.home') }}</a></li>
-			<li class="breadcrumb-item active">{{ trans('finance.withdrawals_report') }}</li>
+			<li class="breadcrumb-item"><a href="javascript:void(0)">{{ trans('libTans::withdrawals.home') }}</a></li>
+			<li class="breadcrumb-item active">{{ trans('libTans::withdrawals.settings') }}</li>
 		</ol>
 	</div>
 </div>	
@@ -20,7 +20,7 @@
 	<div id="VueJs">
 		
 		<withdrawalssettings 
-			id="{{ $id }}"
+			settings="{{ json_encode($settings)}}"	
 			
 		>
 		</withdrawalssettings>
@@ -33,12 +33,8 @@
 
 @stop
 
-@section('styles')
-<link rel="stylesheet" href="{{elixir('css/provider_financial.css')}}" />
-@stop
-
 @section('javascripts')
-<script src="/js/lang.trans/finance,dashboard"> </script> 
+<script src="/libs/lang.trans/withdrawals"> </script> 
 
 
 
