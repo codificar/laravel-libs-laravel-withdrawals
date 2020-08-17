@@ -26,17 +26,30 @@ class Withdrawals extends Eloquent
 
     public static function getWithdrawalsSummary($ledgerId = null, $enviroment)
     {
-
-        $withdrawalsSummary = Finance::select('finance.id as id', 'finance.value as formattedValue', 'finance.compensation_date as date', 'bank.name as bank', 'ledger_bank_account.account as bankAccount')
-                                ->join('ledger', 'finance.ledger_id', '=', 'ledger.id')
-                                ->join($enviroment, 'ledger.'.$enviroment.'_id', '=', $enviroment.'.id')
-                                ->join('ledger_bank_account', 'finance.ledger_bank_account_id', 'ledger_bank_account.id')
-                                ->join('bank', 'ledger_bank_account.bank_id', 'bank.id')
-                                ->where('finance.ledger_id', '=', $ledgerId)
-                                ->where('finance.reason', '=', 'WITHDRAW')
-                                ->orderBy('finance.id', 'desc')
-                                ->get();
-        
+        $withdrawalsSummary = null;
+        if ($enviroment == 'admin') {
+            $withdrawalsSummary = DB::table('withdraw')->select('withdraw.*', 'withdraw.id as id', 'ledger_bank_account.*', 'finance.*', 'bank.name as bank', 'provider.email as provider_email', 'provider.first_name as provider_first_name', 'provider.last_name as provider_last_name', 'user.email as user_email', 'user.first_name as user_first_name', 'user.last_name as user_last_name')
+                ->join('finance', 'finance.id', '=', 'withdraw.finance_withdraw_id')
+                ->join('ledger', 'finance.ledger_id', '=', 'ledger.id')
+                ->leftJoin('provider', 'ledger.provider_id', '=', 'provider.id')
+                ->leftJoin('user', 'ledger.user_id', '=', 'user.id')
+                ->join('ledger_bank_account', 'finance.ledger_bank_account_id', 'ledger_bank_account.id')
+                ->join('bank', 'ledger_bank_account.bank_id', 'bank.id')
+                ->where('finance.reason', '=', 'WITHDRAW')
+                ->orderBy('withdraw.id', 'desc')
+                ->get();
+        } else if ($enviroment == 'provider') {
+            $withdrawalsSummary = DB::table('withdraw')->select('withdraw.*', 'withdraw.id as id', 'finance.value as formattedValue', 'finance.compensation_date as date', 'bank.name as bank', 'ledger_bank_account.account as bankAccount')
+                ->join('finance', 'finance.id', '=', 'withdraw.finance_withdraw_id')    
+                ->join('ledger', 'finance.ledger_id', '=', 'ledger.id')
+                ->join($enviroment, 'ledger.'.$enviroment.'_id', '=', $enviroment.'.id')
+                ->join('ledger_bank_account', 'finance.ledger_bank_account_id', 'ledger_bank_account.id')
+                ->join('bank', 'ledger_bank_account.bank_id', 'bank.id')
+                ->where('finance.ledger_id', '=', $ledgerId)
+                ->where('finance.reason', '=', 'WITHDRAW')
+                ->orderBy('withdraw.id', 'desc')
+                ->get();
+        }
         foreach($withdrawalsSummary as $withdral) {
             $withdral->formattedValue = currency_format($withdral->formattedValue);
         }

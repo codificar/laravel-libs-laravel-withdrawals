@@ -154,7 +154,7 @@ class WithdrawalsController extends Controller {
             } else {
                 $ledger_id = null;
             }
-            $balance = Finance::getWithdrawalsSummary($ledger_id, $enviroment);
+            $balance = Withdrawals::getWithdrawalsSummary($ledger_id, $enviroment);
             if (Input::get('submit') && Input::get('submit') == 'Download_Report') {
                 return $this->downloadFinancialReport($type, $holder, $balance);
             } else {
