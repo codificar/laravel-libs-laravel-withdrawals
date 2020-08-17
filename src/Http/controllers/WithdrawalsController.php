@@ -79,10 +79,11 @@ class WithdrawalsController extends Controller {
     public function getCnabSettings() {
 
         $settings = Withdrawals::getWithdrawalsSettings();
-
+        $cnabFiles = Withdrawals::getRemCnabfiles();
         return View::make('withdrawals::cnab')
                             ->with([
-                                'settings' => $settings
+                                'settings' => $settings,
+                                'cnabFiles' => $cnabFiles
                             ]);
     
     }
@@ -105,6 +106,28 @@ class WithdrawalsController extends Controller {
             "rem_agreement_number" => $request->settings['rem_agreement_number'],
             "rem_transfer_type" => $request->settings['rem_transfer_type'],
 		]);
+    }
+
+
+    public function createCnabFile()
+    {
+        $total = Withdrawals::getTotalValueRequestedWithdrawals();
+
+        //Se o total eh maior que 0, entao gera um arquivo de remessa
+        if($total > 0) {
+
+            
+
+
+            $responseArray = array('success' => true);
+		    $responseCode = 200;
+        } else {
+            $responseArray = array('success' => false, 'error' => 'Valor precisa ser maior que 0', 'errorCode' => 401, 'messages' => 'Valor precisa ser maior que 0');
+		    $responseCode = 200;
+        }
+        // Return data
+		$response = Response::json($responseArray, $responseCode);
+		return $response;
     }
 
 
@@ -154,7 +177,7 @@ class WithdrawalsController extends Controller {
             } else {
                 $ledger_id = null;
             }
-            $balance = Withdrawals::getWithdrawalsSummary($ledger_id, $enviroment);
+            $balance = Withdrawals::getWithdrawalsSummaryWeb($ledger_id, $enviroment);
             if (Input::get('submit') && Input::get('submit') == 'Download_Report') {
                 return $this->downloadFinancialReport($type, $holder, $balance);
             } else {

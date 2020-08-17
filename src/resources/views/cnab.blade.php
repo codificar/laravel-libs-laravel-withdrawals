@@ -21,7 +21,7 @@
 		
 		<withdrawalssettings 
 			settings="{{ json_encode($settings)}}"	
-			
+			cnab-files="{{ json_encode($cnabFiles)}}"	
 		>
 		</withdrawalssettings>
 		

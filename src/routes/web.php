@@ -8,6 +8,7 @@ Route::group(array('namespace' => 'Codificar\Withdrawals\Http\Controllers'), fun
     Route::group(['prefix' => 'admin/libs', 'middleware' => 'auth.admin_api'], function () {
         Route::get('/cnab_settings', array('as' => 'webAdminWithdrawalsSettings', 'uses' => 'WithdrawalsController@getCnabSettings'));
         Route::post('/cnab_settings/save', 'WithdrawalsController@saveCnabSettings');
+        Route::post('/cnab_settings/create_cnab_file', 'WithdrawalsController@createCnabFile');
     });
 
     // (View) Rota para relatorio de saques do admin

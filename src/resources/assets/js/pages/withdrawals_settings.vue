@@ -4,10 +4,12 @@ import moment from "moment";
 export default {
   props: [
     "Settings",
+	"CnabFiles"
   ],
   data() {
     return {
       settings: {},
+	  cnab_files: {}
     };
   },
   methods: {
@@ -55,7 +57,44 @@ export default {
           });
         }
       });
-    }
+    },
+	createNewRemFile() {
+		new Promise((resolve, reject) => {
+            axios
+              .post("/admin/libs/cnab_settings/create_cnab_file", {
+                settings: this.settings
+              })
+              .then(response => {
+                console.log(response);
+                if (response.data.success) {
+                  this.$swal({
+                    title: this.trans("withdrawals.success_set_withdrawals"),
+                    type: "success"
+                  }).then(result => {
+						location.reload();
+                  });
+                } else {
+                  this.$swal({
+                    title: this.trans("withdrawals.failed_set_withdrawals"),
+                    html:
+                      '<label class="alert alert-danger alert-dismissable text-left">' +
+                      response.data.errors +
+                      "</label>",
+                    type: "error"
+                  }).then(result => {});
+                }
+              })
+              .catch(error => {
+                console.log(error);
+                reject(error);
+                return false;
+              });
+          });
+	},
+	showModalCreateCnab() {
+		//open modal
+		$("#modalCreateCnab").modal("show");
+	},
 	
   },
   created() {
@@ -66,7 +105,7 @@ export default {
 		settingsJson[item.key] = item.value
 	});
 	this.settings = settingsJson;
-
+	this.cnab_files = JSON.parse(this.CnabFiles );
   }
 };
 </script>
@@ -288,5 +327,91 @@ export default {
         </div>
       </div>
     </div>
+
+
+	<!-- Row -->
+    <div class="tab-content">
+      <div class="col-lg-12">
+        <div class="card card-outline-info">
+          <div class="card-header">
+            <h4 class="m-b-0 text-white">{{trans('withdrawals.generate_file')}}</h4>
+          </div>
+            <div class="row">
+				<div class="col-lg-12">
+					<div class="card">
+						<div class="card-block">
+							</h3>
+							<div class="card-block">
+								<div style="margin-bottom: 20px !important;">
+									<label>Valor a pagar (novo arquivo):</label>
+									<br>
+									<label>Valor aguardando retorno:</label>
+									<br>
+									<label>Valor de saques não realizados (retornou erro):</label>
+									<br>
+									<button class="btn btn-success" v-on:click="showModalCreateCnab()">{{ trans('withdrawals.create_file') }}</button>
+									<br>
+								</div>
+
+								<table class="table table-bordered">
+									<tr>
+										<th>{{ trans("withdrawals.id") }}</th>
+										<th>{{ trans("withdrawals.status") }}</th>
+										<th>{{ trans("withdrawals.rem_file") }}</th>
+										<th>{{ trans("withdrawals.rem_date") }}</th>
+										<th>{{ trans("withdrawals.ret_file") }}</th>
+										<th>{{ trans("withdrawals.ret_date") }}</th>
+										<th>{{ trans("withdrawals.total_estimated") }}</th>
+										<th>{{ trans("withdrawals.total_paid") }}</th>
+									</tr>
+									<tr v-for="rem_file in cnab_files" v-bind:key="rem_file.id">
+										<td>{{ rem_file.id }}</td>
+										<td>{{ 'Aguardando retorno' }}</td>
+										<td>{{ 'Visualizar' }}</td>
+										<td>{{ rem_file.created_at }}</td>
+										<td>{{ 'Visualizar' }}</td>
+										<td>{{ rem_file.updated_at }}</td>
+										<td>{{ rem_file.total_estimated }}</td>
+										<td>{{ rem_file.total_paid }}</td>
+										
+									</tr>
+								</table>
+
+
+								 <!-- modal -->
+								<div class="modal" :id="'modalCreateCnab'" tabindex="-1" role="dialog" aria-labelledby="modalCreateCnabLabel">
+									<div class="modal-dialog" role="document">
+										<div class="modal-content">
+											<div class="modal-header">
+												<h4 class="modal-title">Criar arquivo de remessa</h4>
+												<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+											</div>
+											<div class="modal-body">
+												<form id="modalForm">
+													<label>Observações</label>
+													<label>1. Caso seja gerado um arquivo de remessa, mas você não enviar ao banco no mesmo dia, o banco irá recusar. Nesse caso, é possível deletar o arquivo de remessa e gerar um novo.</label>
+													<label>2. Ao deletar um arquivo de remessa, todos os saques com status "Aguardando remessa" atrelados ao arquivo, voltarão a ser "Solicitado"</label>
+													<label>3. Apenas arquivos remessa que não possui retorno atrelados podem ser deletados.</label>
+													<label>4. Se nas configurações acima estiver configurado como ambiente "Teste", os saques com status "Solicitado" não serão afetados.</label>
+													
+													<button type="button" v-on:click="createNewRemFile()" class="btn btn-success right">Gerar arquivo remessa</button>
+													
+												</form>
+											</div>
+											
+										</div>
+									</div>
+								</div>
+								<!-- /.modal -->
+
+							</div>
+						</div>
+					</div>
+				</div>
+            </div>
+        </div>
+      </div>
+    </div>
+
   </div>
 </template>

@@ -107,4 +107,13 @@ return array(
 	'save'							=> 'Salvar Dados',
 	'cancel'						=> 'Cancelar',
 	'without'						=> 'sem',
+
+	'generate_file'					=> 'Gerar e enviar arquivos cnab',
+	'rem_file'						=> 'Remessa',
+	'rem_date'						=> 'Data Rem.',
+	'ret_file'						=> 'Retorno',
+	'ret_date'						=> 'Data Ret.',
+	'total_estimated'				=> 'Valor estimado (rem)',
+	'total_paid'					=> 'Valor pago (ret)',
+	'create_file'					=> 'Gerar novo arquivo de remessa'
 );
