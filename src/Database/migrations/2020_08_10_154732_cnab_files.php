@@ -21,6 +21,7 @@ class CnabFiles extends Migration
             $table->float('ret_total')->default(0);
             $table->dateTime('date_rem', 0)->default(0);
             $table->dateTime('date_ret', 0)->default(0);
+            $table->timestamps();
         });
     }
 
