@@ -25,7 +25,7 @@ class Withdrawals extends Migration
             $table->integer('cnab_file_id')->unsigned()->nullable();
             $table->foreign('cnab_file_id')->references('id')->on('cnab_files')->onUpdate('RESTRICT')->onDelete('RESTRICT');
 
-            $table->enum('type', array('requested', 'awaiting return', 'concluded', 'error'))->nullable()->default(null);
+            $table->enum('type', array('requested', 'awaiting_return', 'concluded', 'error'))->nullable()->default(null);
             
             $table->string('bank_receipt_url')->nullable();
             $table->timestamps();

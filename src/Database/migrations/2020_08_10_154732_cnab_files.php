@@ -15,13 +15,12 @@ class CnabFiles extends Migration
     {
         Schema::create('cnab_files', function(Blueprint $table) {
             $table->increments('id');
-            $table->enum('type', array('rem', 'ret'))->nullable()->default(null);
-            $table->integer('associated_ret')->nullable();
-            $table->integer('associated_rem')->nullable();
-            $table->string('url_file')->nullable();
-            $table->float('total_estimated')->default(0);
-            $table->float('total_paid')->default(0);
-            $table->timestamps();
+            $table->string('rem_url_file')->nullable();
+            $table->string('ret_url_file')->nullable();
+            $table->float('rem_total')->default(0);
+            $table->float('ret_total')->default(0);
+            $table->dateTime('date_rem', 0)->default(0);
+            $table->dateTime('date_ret', 0)->default(0);
         });
     }
 
