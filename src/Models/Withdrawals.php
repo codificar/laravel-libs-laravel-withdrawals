@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Pagination\Paginator;
 use Carbon\Carbon;
 use Eloquent;
-use Finance;
+use Finance, Ledger;
 use DB;
 
 
@@ -140,6 +140,17 @@ class Withdrawals extends Eloquent
             );
     }
 
+    public static function updateStatusAndFileAssociated($withdrawId, $fileAssociated) {
+        DB::table('withdraw')
+            ->where('id', '=', $withdrawId)
+            ->update(
+                [
+                    'type' => 'awaiting_return',
+                    'cnab_file_id' => $fileAssociated
+                ]
+            );
+    }
+
     public static function getWithdrawalsSettings() {
 
         $keys = array(
@@ -164,16 +175,6 @@ class Withdrawals extends Eloquent
     }
 
 
-    public static function getRemCnabfiles()
-    {
-        $query = DB::table('cnab_files')->select('cnab_files.*')
-            ->where('cnab_files.type', '=', 'rem')
-            ->orderBy('cnab_files.id', 'desc')
-            ->get();
-        
-        return $query;
-    }
-
     public static function getTotalValueRequestedWithdrawals()
     {
         $query = DB::table('withdraw')
@@ -186,20 +187,70 @@ class Withdrawals extends Eloquent
     }
     public static function getTotalValueAwaitingReturnWithdrawals()
     {
-        $query = DB::table('cnab_files')->select('cnab_files.*')
-            ->where('cnab_files.type', '=', 'rem')
-            ->orderBy('cnab_files.id', 'desc')
+        $query = DB::table('withdraw')
+            ->where('withdraw.type', '=', 'awaiting_return')
+            ->join('finance', 'finance.id', '=', 'withdraw.finance_withdraw_id')  
+            ->select( DB::raw('sum( finance.value ) as totalValue') )
             ->get();
-        
-        return $query;
+        $total = -1 * $query[0]->totalValue;
+        return $total;
     }
     public static function getTotalErroWithdrawals()
     {
-        $query = DB::table('cnab_files')->select('cnab_files.*')
-            ->where('cnab_files.type', '=', 'rem')
-            ->orderBy('cnab_files.id', 'desc')
+        $query = DB::table('withdraw')
+            ->where('withdraw.type', '=', 'error')
+            ->join('finance', 'finance.id', '=', 'withdraw.finance_withdraw_id')  
+            ->select( DB::raw('sum( finance.value ) as totalValue') )
             ->get();
-        
+        $total = -1 * $query[0]->totalValue;
+        return $total;
+    }
+
+
+    public static function getUserProviderDataToCreateCnab()
+    {
+        $query = DB::table('withdraw')
+            ->select(
+                'withdraw.*', 
+                'withdraw.id as id', 
+                'finance.value as totalValue', 
+                'bank.name as bank',
+                'bank.code as bank_code', 
+                'ledger_bank_account.account as account', 
+                'ledger_bank_account.account_digit as account_digit',
+                'ledger_bank_account.agency as agency',
+                'ledger_bank_account.agency_digit as agency_digit',
+                'ledger_bank_account.document as document',
+                'ledger_bank_account.person_type as person_type',
+                'ledger_bank_account.holder as favoredName'
+            )
+            ->where('withdraw.type', '=', 'requested')
+            ->join('finance', 'finance.id', '=', 'withdraw.finance_withdraw_id')
+            ->join('ledger', 'finance.ledger_id', '=', 'ledger.id')
+            ->join('ledger_bank_account', 'finance.ledger_bank_account_id', 'ledger_bank_account.id')
+            ->join('bank', 'ledger_bank_account.bank_id', 'bank.id')
+            ->get();
+
+        foreach($query as $totalValue) {
+            $totalValue->totalValue *= -1;
+        }
         return $query;
+    }
+
+
+    public static function updateWithdrawWhenDeleteCnab($cnab_id) {
+        
+        //Atualiza o status que estao 'aguardando o retorno' desse arquivo, para 'solicitado'
+        DB::table('withdraw')
+            ->where('cnab_file_id', '=', $cnab_id)
+            ->where('type', '=', 'awaiting_return')
+            ->update(['type' => 'requested']);
+
+        
+        //Remove a associacao do arquivo de remessa com o saque (independentemente do status)
+        DB::table('withdraw')
+            ->where('cnab_file_id', '=', $cnab_id)
+            ->update(['cnab_file_id' => null]
+        );
     }
 }

@@ -324,7 +324,7 @@ export default {
                                 <td>{{ entry.document }}</td>
                                 <td>
 									<p v-if="entry.type == 'requested'">Solicitado</p>
-									<p v-if="entry.type == 'awaiting return'">Aguardando arq. retorno</p>
+									<p v-if="entry.type == 'awaiting_return'">Aguardando arq. retorno</p>
 									<p v-if="entry.type == 'concluded'">Concluído</p>
 									<p v-if="entry.type == 'error'">Erro</p>
 								</td>

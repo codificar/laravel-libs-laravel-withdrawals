@@ -22,6 +22,10 @@
 		<withdrawalssettings 
 			settings="{{ json_encode($settings)}}"	
 			cnab-files="{{ json_encode($cnabFiles)}}"	
+			total-requested="{{ $totalRequested }}"
+			total-awaiting-return="{{ $totalAwaitingReturn }}"
+			total-error="{{ $totalError }}"
+			currency-symbol="{{\Settings::getCurrency()}}">
 		>
 		</withdrawalssettings>
 		

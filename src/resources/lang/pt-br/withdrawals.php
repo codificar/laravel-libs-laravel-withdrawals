@@ -115,5 +115,12 @@ return array(
 	'ret_date'						=> 'Data Ret.',
 	'total_estimated'				=> 'Valor estimado (rem)',
 	'total_paid'					=> 'Valor pago (ret)',
-	'create_file'					=> 'Gerar novo arquivo de remessa'
+	'create_file'					=> 'Gerar novo arquivo de remessa',
+	'success_created_cnab'			=> 'Arquivo de remessa gerado com sucesso.',
+	'error_created_cnab'			=> 'houve um erro ao gerar arquivo de remessa.',
+	'awaiting_return'				=> 'Aguardando retorno',
+	'concluded'						=> 'Concluído',
+	'delete'						=> 'Deletar',
+	'delete_msg'					=> 'Tem certeza que deseja deletar o arquivo de remessa? Ao deletar, todos os saques com status "Aguardando Retorno" voltarão a ser "Solicitado"',
+	'file_was_deleted'				=> 'Arquivo deletado com sucesso'
 );

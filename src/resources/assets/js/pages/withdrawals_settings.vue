@@ -4,7 +4,11 @@ import moment from "moment";
 export default {
   props: [
     "Settings",
-	"CnabFiles"
+	"CnabFiles",
+	"TotalRequested",
+	"TotalAwaitingReturn",
+	"TotalError",
+	"currencySymbol"
   ],
   data() {
     return {
@@ -13,6 +17,42 @@ export default {
     };
   },
   methods: {
+
+	/**
+	* This method call a api and realod the page after success response
+	*/
+	postApiAndRealod(route, params, successMsg) {
+		console.log('params:: ', successMsg);
+		new Promise((resolve, reject) => {
+            axios
+              .post(route, params)
+              .then(response => {
+                console.log(response);
+                if (response.data.success) {
+					this.$swal({
+						title: successMsg,
+						type: "success"
+					}).then(result => {
+						location.reload();
+					});
+                } else {
+                  this.$swal({
+                    title: this.trans("withdrawals.error"),
+                    html:
+                      '<label class="alert alert-danger alert-dismissable text-left">' +
+                      response.data.errors +
+                      "</label>",
+                    type: "error"
+                  }).then(result => {});
+                }
+              })
+              .catch(error => {
+                console.log(error);
+                reject(error);
+                return false;
+              });
+          });
+	},
 
     setWithdrawalsSettings() {
       this.$swal({
@@ -23,73 +63,47 @@ export default {
         cancelButtonText: this.trans("withdrawals.no")
       }).then(result => {
         if (result.value) {
-          
-          new Promise((resolve, reject) => {
-            axios
-              .post("/admin/libs/cnab_settings/save", {
-                settings: this.settings
-              })
-              .then(response => {
-                console.log(response);
-                if (response.data.success) {
-                  this.$swal({
-                    title: this.trans("withdrawals.success_set_withdrawals"),
-                    type: "success"
-                  }).then(result => {
-						location.reload();
-                  });
-                } else {
-                  this.$swal({
-                    title: this.trans("withdrawals.failed_set_withdrawals"),
-                    html:
-                      '<label class="alert alert-danger alert-dismissable text-left">' +
-                      response.data.errors +
-                      "</label>",
-                    type: "error"
-                  }).then(result => {});
-                }
-              })
-              .catch(error => {
-                console.log(error);
-                reject(error);
-                return false;
-              });
-          });
+
+			//Call api
+			this.postApiAndRealod(
+				"/admin/libs/cnab_settings/save", 
+				{ settings: this.settings },
+				this.trans("withdrawals.success_set_withdrawals")
+			);
+
         }
       });
     },
+	deleteRemFile(rem_id) {
+		this.$swal({
+			title: this.trans('withdrawals.delete'),
+			text: this.trans('withdrawals.delete_msg'),
+			type: 'question',
+			showCancelButton: true,
+			confirmButtonText: this.trans('withdrawals.yes'),
+			cancelButtonText: this.trans('withdrawals.no')
+			}).then((result) => {
+			if (result.value) {
+
+				//Chama a api para deletar o arquivo remessa delete_cnab_file
+				this.postApiAndRealod(
+					"/admin/libs/cnab_settings/delete_cnab_file", 
+					{ cnab_id: rem_id },
+					this.trans("withdrawals.file_was_deleted")
+				);
+			
+			}
+		});
+	},
 	createNewRemFile() {
-		new Promise((resolve, reject) => {
-            axios
-              .post("/admin/libs/cnab_settings/create_cnab_file", {
-                settings: this.settings
-              })
-              .then(response => {
-                console.log(response);
-                if (response.data.success) {
-                  this.$swal({
-                    title: this.trans("withdrawals.success_set_withdrawals"),
-                    type: "success"
-                  }).then(result => {
-						location.reload();
-                  });
-                } else {
-                  this.$swal({
-                    title: this.trans("withdrawals.failed_set_withdrawals"),
-                    html:
-                      '<label class="alert alert-danger alert-dismissable text-left">' +
-                      response.data.errors +
-                      "</label>",
-                    type: "error"
-                  }).then(result => {});
-                }
-              })
-              .catch(error => {
-                console.log(error);
-                reject(error);
-                return false;
-              });
-          });
+
+		//Call api
+		this.postApiAndRealod(
+			"/admin/libs/cnab_settings/create_cnab_file", 
+			{ settings: this.settings },
+			this.trans("withdrawals.success_created_cnab")
+		);
+		
 	},
 	showModalCreateCnab() {
 		//open modal
@@ -160,6 +174,7 @@ export default {
 								name="rem_agreement_number"
 								id="rem_agreement_number"
 								required
+								v-mask="['######']"
 								v-model="settings.rem_agreement_number"
 							/>
 						</div>
@@ -176,6 +191,7 @@ export default {
 							class="form-control"
 							name="rem_company_name"
 							id="rem_company_name"
+							maxlength="30"
 							required
 							v-model="settings.rem_company_name"
 							/>
@@ -242,11 +258,12 @@ export default {
 					<div class="col-md-6 col-sm-12">
 						<div class="form-group">
 							<label class="control-label">{{trans('withdrawals.rem_document') }}</label>
-							<input
+							<the-mask
 							type="text"
 							class="form-control"
 							name="rem_document"
 							id="rem_document"
+							:mask="['###.###.###-##', '##.###.###/####-##']"
 							required
 							v-model="settings.rem_document"
 							/>
@@ -264,6 +281,7 @@ export default {
 							class="form-control"
 							name="rem_agency"
 							id="rem_agency"
+							v-mask="['#####']"
 							required
 							v-model="settings.rem_agency"
 							/>
@@ -279,6 +297,7 @@ export default {
 							class="form-control"
 							name="rem_agency_dv"
 							id="rem_agency_dv"
+							v-mask="['#']"
 							required
 							v-model="settings.rem_agency_dv"
 							/>
@@ -297,6 +316,7 @@ export default {
 							class="form-control"
 							name="rem_account"
 							id="rem_account"
+							v-mask="['############']"
 							required
 							v-model="settings.rem_account"
 							/>
@@ -312,6 +332,7 @@ export default {
 							class="form-control"
 							name="rem_account_dv"
 							id="rem_account_dv"
+							v-mask="['#######']"
 							required
 							v-model="settings.rem_account_dv"
 							/>
@@ -342,18 +363,24 @@ export default {
 						<div class="card-block">
 							</h3>
 							<div class="card-block">
-								<div style="margin-bottom: 20px !important;">
-									<label>Valor a pagar (novo arquivo):</label>
-									<br>
-									<label>Valor aguardando retorno:</label>
-									<br>
-									<label>Valor de saques não realizados (retornou erro):</label>
-									<br>
-									<button class="btn btn-success" v-on:click="showModalCreateCnab()">{{ trans('withdrawals.create_file') }}</button>
-									<br>
-								</div>
 
 								<table class="table table-bordered">
+									<tr>
+										<th>Valor a pagar</th>
+										<th>Aguardando retorno</th>
+										<th>Valor com erros</th>
+									</tr>
+									<tr>
+										<td class="text-success">{{ currency_format(this.TotalRequested, this.currencySymbol) }}</td>
+										<td>{{ currency_format(this.TotalAwaitingReturn, this.currencySymbol) }}</td>
+										<td class="text-danger">{{ currency_format(this.TotalError, this.currencySymbol) }}</td>
+										
+									</tr>
+								</table>
+
+								<button class="btn btn-success" v-on:click="showModalCreateCnab()">{{ trans('withdrawals.create_file') }}</button>
+
+								<table style="margin-top: 15px !important" class="table table-bordered">
 									<tr>
 										<th>{{ trans("withdrawals.id") }}</th>
 										<th>{{ trans("withdrawals.status") }}</th>
@@ -363,17 +390,45 @@ export default {
 										<th>{{ trans("withdrawals.ret_date") }}</th>
 										<th>{{ trans("withdrawals.total_estimated") }}</th>
 										<th>{{ trans("withdrawals.total_paid") }}</th>
+										<th>{{ trans("withdrawals.action") }}</th>
 									</tr>
-									<tr v-for="rem_file in cnab_files" v-bind:key="rem_file.id">
-										<td>{{ rem_file.id }}</td>
-										<td>{{ 'Aguardando retorno' }}</td>
-										<td>{{ 'Visualizar' }}</td>
-										<td>{{ rem_file.created_at }}</td>
-										<td>{{ 'Visualizar' }}</td>
-										<td>{{ rem_file.updated_at }}</td>
-										<td>{{ rem_file.total_estimated }}</td>
-										<td>{{ rem_file.total_paid }}</td>
+									<tr v-for="row in cnab_files" v-bind:key="row.id">
+										<td>{{ row.id }}</td>
+										<td>
+											<a v-if="row.ret_url_file"  >{{ trans("withdrawals.concluded") }}</a>
+											<a v-else class="text-danger">{{ trans("withdrawals.awaiting_return") }}</a>
+										</td>
+										<td><a :href="row.rem_url_file" download>Baixar</a></td>
+										<td>{{ row.date_rem }}</td>
+										<td>
+											<a v-if="row.ret_url_file" :href="row.ret_url_file" download>Baixar</a>
+											<a v-else>Enviar</a>
+										</td>
+										<td>{{ row.date_ret }}</td>
+										<td>{{ currency_format(row.rem_total, currencySymbol) }}</td>
+										<td>{{ currency_format(row.ret_total, currencySymbol) }}</td>
 										
+										<td>
+											<!-- So pode excluir um arquivo de remessa se nao tiver um retorno atrelado -->
+											<a v-if="row.ret_url_file">N/A</a>
+											<div v-else-if="!row.ret_url_file" class="dropdown">
+												<button class="btn btn-info dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown">
+													{{trans('withdrawals.action') }}
+													<span class="caret"></span>
+												</button>
+
+												<div class="dropdown-menu dropdown-menu-right" role="menu" aria-labelledby="dropdownMenu1">
+													<a 
+														class="dropdown-item" 
+														style="cursor: pointer;" 
+														v-on:click="deleteRemFile(row.id)"
+													>
+														{{ trans('withdrawals.delete') }}
+													</a>
+												</div>
+											</div>
+										</td>
+
 									</tr>
 								</table>
 

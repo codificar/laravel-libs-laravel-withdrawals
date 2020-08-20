@@ -5,14 +5,15 @@
 Route::group(array('namespace' => 'Codificar\Withdrawals\Http\Controllers'), function () {
     
     // (View) Rotas de configuracoes do saque (cnab)
-    Route::group(['prefix' => 'admin/libs', 'middleware' => 'auth.admin_api'], function () {
+    Route::group(['prefix' => 'admin/libs', 'middleware' => 'auth.admin'], function () {
         Route::get('/cnab_settings', array('as' => 'webAdminWithdrawalsSettings', 'uses' => 'WithdrawalsController@getCnabSettings'));
         Route::post('/cnab_settings/save', 'WithdrawalsController@saveCnabSettings');
         Route::post('/cnab_settings/create_cnab_file', 'WithdrawalsController@createCnabFile');
+        Route::post('/cnab_settings/delete_cnab_file', 'WithdrawalsController@deleteCnabFile');
     });
 
     // (View) Rota para relatorio de saques do admin
-    Route::group(['prefix' => '/admin/libs', 'middleware' => 'auth.admin_api'], function () {
+    Route::group(['prefix' => '/admin/libs', 'middleware' => 'auth.admin'], function () {
         Route::get('/withdrawals', array('as' => 'webAdminWithdrawalsReport', 'uses' => 'WithdrawalsController@getWithdrawalsReportWeb'));
     });
 
@@ -28,7 +29,7 @@ Route::group(array('namespace' => 'Codificar\Withdrawals\Http\Controllers'), fun
 
     
     // (Api) Rotas da api dar baixa no saque manualmente, com envio de comprovante (foto) e data
-    Route::group(['prefix' => '/admin/libs', 'middleware' => 'auth.admin_api'], function () {
+    Route::group(['prefix' => '/admin/libs', 'middleware' => 'auth.admin'], function () {
         Route::post('/withdrawals/confirm_withdraw', array('as' => 'webAdminConfirmWithdraw', 'uses' => 'WithdrawalsController@confirmWithdraw'));
     });
 

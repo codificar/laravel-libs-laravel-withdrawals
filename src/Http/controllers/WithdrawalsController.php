@@ -3,6 +3,7 @@
 namespace Codificar\Withdrawals\Http\Controllers;
 
 use Codificar\Withdrawals\Models\Withdrawals;
+use Codificar\Withdrawals\Models\CnabFiles;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
@@ -18,6 +19,9 @@ use Codificar\Withdrawals\Http\Resources\ProviderWithdrawalsReportResource;
 use Codificar\Withdrawals\Http\Resources\ProviderAddWithdrawalResource;
 use Codificar\Withdrawals\Http\Resources\ConfirmWithdrawResource;
 use Codificar\Withdrawals\Http\Resources\saveCnabSettingsResource;
+
+//Gerar arquivo de remessa CNAB
+use \CnabPHP\Remessa;
 
 use Input, Validator, View, Response;
 use Provider, Settings, Ledger, Finance, Bank, LedgerBankAccount;
@@ -79,12 +83,18 @@ class WithdrawalsController extends Controller {
     public function getCnabSettings() {
 
         $settings = Withdrawals::getWithdrawalsSettings();
-        $cnabFiles = Withdrawals::getRemCnabfiles();
+        $cnabFiles = CnabFiles::getCnabfiles();
+        $totalRequested = Withdrawals::getTotalValueRequestedWithdrawals();
+        $totalAwaitingReturn = Withdrawals::getTotalValueAwaitingReturnWithdrawals();
+        $TotalError = Withdrawals::getTotalErroWithdrawals();
         return View::make('withdrawals::cnab')
-                            ->with([
-                                'settings' => $settings,
-                                'cnabFiles' => $cnabFiles
-                            ]);
+            ->with([
+                'settings' => $settings,
+                'cnabFiles' => $cnabFiles,
+                'totalRequested' => $totalRequested,
+                'totalAwaitingReturn' => $totalAwaitingReturn,
+                'totalError' => $TotalError
+            ]);
     
     }
 
@@ -116,13 +126,148 @@ class WithdrawalsController extends Controller {
         //Se o total eh maior que 0, entao gera um arquivo de remessa
         if($total > 0) {
 
+            //Pega as configuracoes do banco
+            $getSettings = Withdrawals::getWithdrawalsSettings();
+            $settings = array();
+            foreach($getSettings as $eachSetting){
+                $settings[$eachSetting->key] = $eachSetting->value;
+            }
             
+            //Pega as informacoes dos favorecidos
+            $beneficiariesData = Withdrawals::getUserProviderDataToCreateCnab();
+
+            /**
+             * documentos uteis:
+             * pag 24 - https://www.bb.com.br/docs/pub/emp/empl/dwn/000Completo.pdf
+             * http://suporte.quarta.com.br/LayOuts/Bancos/18-Santander%20(febraban).pdf
+             */
+            //Registro 0
+            $arquivo = new Remessa("104",'cnab240_transf',array(
+                'tipo_inscricao'        => $settings['rem_cpf_or_cnpj'] == "cpf" ? 1 : 2, // 1 para cpf, 2 cnpj 
+                'numero_inscricao'      => $settings['rem_document'], // seu cpf ou cnpj completo
+                'convenio_caixa'        => $settings['rem_agreement_number'], // informado pelo banco, ate 6 digitos
+                'param_transmissao'     => '12', // ate 2 digitos, fornecido pela caixa
+                'amb_cliente'           => "T", // T teste e P producao
+                'agencia'               => $settings['rem_agency'], // sua agencia (pagador), sem o digito verificador 
+                'agencia_dv'            => $settings['rem_agency_dv'], // somente o digito verificador da agencia 
+                'conta'                 => $settings['rem_account'], // numero da sua conta
+                'conta_dv'              => $settings['rem_account_dv'], // digito da conta
+                'nome_empresa'          => $settings['rem_company_name'], // seu nome de empresa max 30
+                'numero_sequencial_arquivo' => 1, // sequencial do arquivo um numero novo para cada arquivo gerado
+            ));
+
+            //Registro 1
+            $lote  = $arquivo->addLote(array(   //HEADER DO LOTE
+                'tipo_servico_transf'=> '98', // '98' = Pagamentos Diversos - tem a lista na pagina 39, G025 http://www.caixa.gov.br/Downloads/pagamentos-de-salarios-fornecedores-e-auto-pagamento/Leiaute_CNAB_240_Pagamentos.pdf
+                'forma_lancamento' => $settings['rem_transfer_type'] == "doc" ? '03' : "41", // 03 DOC. e 41 TED. lista completa na pag 39, G029,  http://www.caixa.gov.br/Downloads/pagamentos-de-salarios-fornecedores-e-auto-pagamento/Leiaute_CNAB_240_Pagamentos.pdf
+                'convenio_caixa'=> $settings['rem_agreement_number'],    // informado pelo banco, convenio caixa (ate 6 digitos)
+                'tipo_compromisso'=> '11',     //01 Pagamento a Fornecedor - 02 Pagamento de Salarios - 03 Autopagamento - 06 Salario Ampliacao de Base - 11 Debito em Conta			
+                'codigo_compromisso'=> '1234', // informado pelo banco. 4 Digitos
+                'param_transmissao' => '12', // informado pelo banco, ate 2 digitos,
+                'logradouro' => 'Rua dos Goitacazes',
+                'numero_endereco' => 375,
+                'cidade' => 'Belo Horizonte',
+                'cep' => 30190,
+                'complemento_cep' =>'050',
+                'estado' => 'MG'
+            )); 
+
+            foreach($beneficiariesData as $data) {
+                $lote->inserirTransferencia(array(
+
+                    //Segmento A
+                    'codigo_camera'     => $settings['rem_transfer_type'] == "doc" ? '700' : '018', // 018 TED - 700 DOC/OP - 000 Credito em Conta - 888 Boleted/ISPB 
+                    'cod_banco_fav'     => $data->bank_code,
+                    'agen_cta_favor'    => $data->agency,
+                    'dig_ver_agen'      => $data->agency_digit,
+                    'conta_corrente_fav'=> $data->account,
+                    'dig_conta_fav'     => $data->account_digit,
+                    'nome_fav'          => $data->favoredName,
+                    'num_atribuido_empresa' => $data->id, //numero para identificar a transferencia. Retornado conforme recebido. Deve ser maior que 0.
+                    'tipo_conta_ted'    => '1', //preencher apenas se a transferencia for do tipo TED. 1 – Conta corrente; 2 – Poupança;
+                    'cod_finalidade_doc'=> '01', //preencher apenas se a transferencia for do tipo. Valores na tabela P005, pag 39 - http://www.caixa.gov.br/Downloads/pagamentos-de-salarios-fornecedores-e-auto-pagamento/Leiaute_CNAB_240_Pagamentos.pdf
+                    'data_pagamento'    => date("Y/m/d"),
+                    'valor_pagamento'   => $data->totalValue,
+                    
+                    //Segmento B
+                    'logradouro'        => 'Nome da rua',
+                    'num_do_local'      => 1,
+                    'bairro'            => 'Bairro',
+                    'cidade'            => 'Belo Horizonte',
+                    'cep'               => 30190,
+                    'complemento_cep'   => '050',
+                    'sigla_estado'      => 'MG',
+                    'tipo_inscricao'    => $data->person_type != 'individual' ? 2 : 1, //campo fixo, escreva '1' se for pessoa fisica, 2 se for pessoa juridica
+                    'numero_inscricao'  => $data->document,//cpf ou ncpj do favorecido
+                ));
+            }
+        
+
+            //get file
+            $cnabFile = utf8_decode($arquivo->getText());
+                
+            // get nome
+            $file_name = time();
+            $file_name .= rand();
+            $file_name = sha1($file_name);
+
+            //Upload
+            $teste = file_put_contents(public_path() . "/uploads/" . $file_name . ".txt", $cnabFile);
+
+            // Upload to S3
+            $local_url = $file_name . ".txt";
+            $s3_url = upload_to_s3($file_name, $local_url);
+            
+            //Salva o arquivo no banco
+            $modelCnabFile = new CnabFiles;
+            $modelCnabFile->rem_total = $total;
+            $modelCnabFile->rem_url_file = $s3_url;
+            $modelCnabFile->date_rem = date("Y-m-d H:i:s");
+            $modelCnabFile->save();
+
+            //Se chegou ate aqui, troca o status do saque de 'solicitado' para 'aguardando retorno'
+            //Isso para todos os benificiarios que foram gerados no arquivo de remessa
+            foreach($beneficiariesData as $data) {
+                Withdrawals::updateStatusAndFileAssociated($data->id, $modelCnabFile->id);
+            }
 
 
             $responseArray = array('success' => true);
 		    $responseCode = 200;
         } else {
-            $responseArray = array('success' => false, 'error' => 'Valor precisa ser maior que 0', 'errorCode' => 401, 'messages' => 'Valor precisa ser maior que 0');
+            $responseArray = array('success' => false, 'errors' => 'Valor precisa ser maior que 0', 'errorCode' => 401, 'messages' => 'Valor precisa ser maior que 0');
+		    $responseCode = 200;
+        }
+        // Return data
+		$response = Response::json($responseArray, $responseCode);
+		return $response;
+    }
+
+
+
+
+    public function deleteCnabFile()
+    {
+        $cnabId = Input::get('cnab_id');
+        $cnab = CnabFiles::find($cnabId);
+        if($cnab) {
+            //Verifica se esse arquivo nao tem retorno associado. Arquivos com retorno associados nao podem ser excluidos
+            if(!$cnab->ret_url_file) {
+                
+                //altera o status dos saques relacionados a esse arquivo, de "aguardando remessa" para "solicitado" e remove o arquivo de remessa associado
+                Withdrawals::updateWithdrawWhenDeleteCnab($cnab->id);
+
+                //Deleta a row que contem o arquivo rem
+                $cnab->delete();
+                
+                $responseArray = array('success' => true);
+		        $responseCode = 200;
+            } else {
+                $responseArray = array('success' => false, 'errors' => 'Somente arquivos de remessa sem retorno atrelados podem ser excluidos', 'messages' => 'error');
+                $responseCode = 200;
+            }
+        } else {
+            $responseArray = array('success' => false, 'errors' => 'id nao encontrado', 'errorCode' => 412, 'messages' => 'Id nao encontrado');
 		    $responseCode = 200;
         }
         // Return data
