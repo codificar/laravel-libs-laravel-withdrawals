@@ -5,9 +5,7 @@
         "name": "Codificar",
         "email": "libs@codificar.com.br"
     }],
-    "require": {
-        "quilhasoft/opencnabphp": "dev-master#34bb059"
-    },
+    "require": {},
     "autoload": {
         "psr-4": {
             "Codificar\\Withdrawals\\": "src/"
