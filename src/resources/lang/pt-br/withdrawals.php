@@ -122,5 +122,6 @@ return array(
 	'concluded'						=> 'Concluído',
 	'delete'						=> 'Deletar',
 	'delete_msg'					=> 'Tem certeza que deseja deletar o arquivo de remessa? Ao deletar, todos os saques com status "Aguardando Retorno" voltarão a ser "Solicitado"',
-	'file_was_deleted'				=> 'Arquivo deletado com sucesso'
+	'file_was_deleted'				=> 'Arquivo deletado com sucesso',
+	'ret_file_uploaded'				=> 'Arquivo de retorno enviado com sucesso'
 );

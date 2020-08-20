@@ -13,12 +13,14 @@ use File;
 use Codificar\Withdrawals\Http\Requests\ProviderAddWithdrawalFormRequest;
 use Codificar\Withdrawals\Http\Requests\SaveWithdrawalSettingsFormRequest;
 use Codificar\Withdrawals\Http\Requests\ConfirmWithdrawFormRequest;
+use Codificar\Withdrawals\Http\Requests\SendRetFileFormRequest;
 
 //Resource
 use Codificar\Withdrawals\Http\Resources\ProviderWithdrawalsReportResource;
 use Codificar\Withdrawals\Http\Resources\ProviderAddWithdrawalResource;
 use Codificar\Withdrawals\Http\Resources\ConfirmWithdrawResource;
 use Codificar\Withdrawals\Http\Resources\saveCnabSettingsResource;
+use Codificar\Withdrawals\Http\Resources\SendRetFileResource;
 
 //Gerar arquivo de remessa CNAB
 use \CnabPHP\Remessa;
@@ -243,6 +245,26 @@ class WithdrawalsController extends Controller {
 		return $response;
     }
 
+
+
+    public function sendRetFile(SendRetFileFormRequest $request) {
+
+        //get the cnab id
+        $cnab_id = $request->cnab_id;
+
+        //get the ret file
+        $retFile = $request->cnab_ret_file;
+       
+       // #TODO
+       //FAZER A LOGICA DO ARQUIVO DE RETORNO AQUI.
+
+
+        // Return data
+		return new SendRetFileResource([
+            "message" => 'sucess',
+            "link" => 'link'
+		]);
+    }
 
 
 

@@ -9,6 +9,7 @@ Route::group(array('namespace' => 'Codificar\Withdrawals\Http\Controllers'), fun
         Route::get('/cnab_settings', array('as' => 'webAdminWithdrawalsSettings', 'uses' => 'WithdrawalsController@getCnabSettings'));
         Route::post('/cnab_settings/save', 'WithdrawalsController@saveCnabSettings');
         Route::post('/cnab_settings/create_cnab_file', 'WithdrawalsController@createCnabFile');
+        Route::post('/cnab_settings/send_ret_file', 'WithdrawalsController@sendRetFile');
         Route::post('/cnab_settings/delete_cnab_file', 'WithdrawalsController@deleteCnabFile');
     });
 

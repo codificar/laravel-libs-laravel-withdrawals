@@ -13,10 +13,23 @@ export default {
   data() {
     return {
       settings: {},
-	  cnab_files: {}
+	  cnab_files: {},
+	  retFile: '',
+	  current_ret_file_id: null
     };
   },
   methods: {
+
+	showErrorMsg(errors) {
+		this.$swal({
+			title: this.trans("withdrawals.error"),
+			html:
+			'<label class="alert alert-danger alert-dismissable text-left">' +
+			errors +
+			"</label>",
+			type: "error"
+		}).then(result => {});
+	},
 
 	/**
 	* This method call a api and realod the page after success response
@@ -105,10 +118,66 @@ export default {
 		);
 		
 	},
+
+	reloadPageWithMessage(message) {
+		console.log("caiu no reload");
+		this.$swal({
+				title: message,
+				type: 'success'
+			}).then((result) => { location.reload(); } );
+	},
+
 	showModalCreateCnab() {
 		//open modal
 		$("#modalCreateCnab").modal("show");
 	},
+
+	handleFileUpload: function(id) {
+		console.log(this.$refs.myFiles.files);
+		this.retFile = this.$refs.myFiles.files[0];
+	},
+
+	sendRetFile(currentId) {
+
+		//when click in modal, reset the image
+		this.retFile = '';
+		$("#modalFormRet").trigger("reset");
+
+		//set the current modal associed id
+		this.current_ret_file_id = currentId;
+
+		//open modal
+		$("#modalSendRetFile").modal("show");
+	},
+
+	confirmSendRetFile(id) {
+
+		let formData = new FormData();
+		formData.append('cnab_id', this.current_ret_file_id);
+		formData.append('cnab_ret_file', this.retFile);
+
+		axios.post( '/admin/libs/cnab_settings/send_ret_file', formData, {
+			headers: {
+				'Content-Type': 'multipart/form-data'
+			}
+		}).then(response => {
+			console.log('dados:', response);
+			$('#modalSendRetFile').modal('hide');
+
+			if (response.data.success) {
+				this.reloadPageWithMessage(this.trans("withdrawals.ret_file_uploaded"));
+			} else {
+				this.showErrorMsg(response.data.errors);
+			}
+		})
+		.catch(error => {
+			$('#modalSendRetFile').modal('hide');
+			console.log(error);
+			this.showErrorMsg(this.trans("withdrawals.error"));
+			return false;
+		});
+
+	}
 	
   },
   created() {
@@ -373,7 +442,7 @@ export default {
 									<tr>
 										<td class="text-success">{{ currency_format(this.TotalRequested, this.currencySymbol) }}</td>
 										<td>{{ currency_format(this.TotalAwaitingReturn, this.currencySymbol) }}</td>
-										<td class="text-danger">{{ currency_format(this.TotalError, this.currencySymbol) }}</td>
+										<td>{{ currency_format(this.TotalError, this.currencySymbol) }}</td>
 										
 									</tr>
 								</table>
@@ -402,7 +471,7 @@ export default {
 										<td>{{ row.date_rem }}</td>
 										<td>
 											<a v-if="row.ret_url_file" :href="row.ret_url_file" download>Baixar</a>
-											<a v-else>Enviar</a>
+											<a v-else v-on:click="sendRetFile(row.id)" style="cursor: pointer;"class="text-primary">Enviar</a>
 										</td>
 										<td>{{ row.date_ret }}</td>
 										<td>{{ currency_format(row.rem_total, currencySymbol) }}</td>
@@ -433,7 +502,7 @@ export default {
 								</table>
 
 
-								 <!-- modal -->
+								 <!-- modal enviar arquivo remessa-->
 								<div class="modal" :id="'modalCreateCnab'" tabindex="-1" role="dialog" aria-labelledby="modalCreateCnabLabel">
 									<div class="modal-dialog" role="document">
 										<div class="modal-content">
@@ -450,6 +519,39 @@ export default {
 													<label>4. Se nas configurações acima estiver configurado como ambiente "Teste", os saques com status "Solicitado" não serão afetados.</label>
 													
 													<button type="button" v-on:click="createNewRemFile()" class="btn btn-success right">Gerar arquivo remessa</button>
+													
+												</form>
+											</div>
+											
+										</div>
+									</div>
+								</div>
+								<!-- /.modal -->
+
+
+								<!-- modal enviar arquivo retorno-->
+								<div class="modal" :id="'modalSendRetFile'" tabindex="-1" role="dialog" aria-labelledby="modalmodalSendRetFileLabel">
+									<div class="modal-dialog" role="document">
+										<div class="modal-content">
+											<div class="modal-header">
+												<h4 class="modal-title">Arquivo de retorno</h4>
+												<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+											</div>
+											<div class="modal-body">
+												<form id="modalFormRet">
+													<label for="confirm_withdraw_picture">Envie o arquivo de retorno</label>
+													<input 
+														type="file" 
+														:id="'file'" 
+														:ref="'myFiles'" 
+														class="form-control-file" 
+														@change="handleFileUpload"
+													>
+
+													
+													<br>
+													
+													<button type="button" v-on:click="confirmSendRetFile(this.current_ret_file_id)" class="btn btn-success right">Enviar</button>
 													
 												</form>
 											</div>
