@@ -19,8 +19,8 @@ class CnabFiles extends Migration
             $table->string('ret_url_file')->nullable();
             $table->float('rem_total')->default(0);
             $table->float('ret_total')->default(0);
-            $table->dateTime('date_rem', 0)->default(0);
-            $table->dateTime('date_ret', 0)->default(0);
+            $table->dateTime('date_rem', 0)->nullable()->default(null);
+            $table->dateTime('date_ret', 0)->nullable()->default(null);
             $table->timestamps();
         });
     }
