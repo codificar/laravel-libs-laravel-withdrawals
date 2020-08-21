@@ -24,9 +24,9 @@ Route::group(array('namespace' => 'Codificar\Withdrawals\Http\Controllers'), fun
     });
 
     // (View) Rota para relatorio de saques do user
-    Route::group(['prefix' => '/user/libs', 'middleware' => 'auth.user'], function () {
-        Route::get('/withdrawals', array('as' => 'webUserWithdrawalsReport', 'uses' => 'WithdrawalsController@getWithdrawalsReportWeb'));
-    });
+    // Route::group(['prefix' => '/user/libs', 'middleware' => 'auth.user'], function () {
+    //     Route::get('/withdrawals', array('as' => 'webUserWithdrawalsReport', 'uses' => 'WithdrawalsController@getWithdrawalsReportWeb'));
+    // });
 
     
     // (Api) Rotas da api dar baixa no saque manualmente, com envio de comprovante (foto) e data
