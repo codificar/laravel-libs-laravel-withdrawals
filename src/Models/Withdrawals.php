@@ -37,7 +37,7 @@ class Withdrawals extends Eloquent
             ->orderBy('withdraw.id', 'desc')
             ->get();
         foreach($withdrawalsSummary as $withdral) {
-            $withdral->formattedValue = currency_format($withdral->formattedValue);
+            $withdral->formattedValue = currency_format(-1* $withdral->formattedValue);
         }
         return $withdrawalsSummary;
     }
