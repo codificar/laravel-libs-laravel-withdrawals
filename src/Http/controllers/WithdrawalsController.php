@@ -45,11 +45,15 @@ class WithdrawalsController extends Controller {
             'with_draw_min_limit' => Settings::getWithDrawMinLimit(),
             'with_draw_tax' => Settings::getWithDrawTax()
         );
+
+        // Get the current balance from ledger. 
+        $currentBalance = Finance::sumValueByLedgerId($provider->ledger->id);
         
         // Return data
 		return new ProviderWithdrawalsReportResource([
             'withdrawals_report' => $withdrawals_report,
-            'withdraw_settings' => $withDrawSettings
+            'withdraw_settings' => $withDrawSettings,
+            'current_balance'    => $currentBalance
 		]);
     }
 

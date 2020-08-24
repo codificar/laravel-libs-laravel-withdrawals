@@ -37,7 +37,8 @@ class ProviderWithdrawalsReportResource extends JsonResource {
         return [
             'success' => true,
             'withdrawals_report' => $this['withdrawals_report'],
-            'withdraw_settings' => $this['withdraw_settings']
+            'withdraw_settings' => $this['withdraw_settings'],
+            'current_balance' => $this['current_balance']
         ];
     }
 
