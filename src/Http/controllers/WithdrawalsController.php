@@ -37,10 +37,19 @@ class WithdrawalsController extends Controller {
         $provider = Provider::find($providerId);
         
         $withdrawals_report = Withdrawals::getWithdrawalsSummary($provider->ledger->id, 'provider');
+
+
+        $withDrawSettings = array(
+            'with_draw_enabled' => Settings::getWithDrawEnabled(),
+            'with_draw_max_limit' => Settings::getWithDrawMaxLimit(),
+            'with_draw_min_limit' => Settings::getWithDrawMinLimit(),
+            'with_draw_tax' => Settings::getWithDrawTax()
+        );
         
         // Return data
 		return new ProviderWithdrawalsReportResource([
-			'withdrawals_report' => $withdrawals_report
+            'withdrawals_report' => $withdrawals_report,
+            'withdraw_settings' => $withDrawSettings
 		]);
     }
 
