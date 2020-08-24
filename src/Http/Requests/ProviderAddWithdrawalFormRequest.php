@@ -34,7 +34,7 @@ class ProviderAddWithdrawalFormRequest extends FormRequest {
         return [
             'provider_id'       => ['required', 'integer'],
             'withdraw_value'    => ['required', 'numeric'],
-            'bank_account_id'   => ['required', 'integer']
+            'bank_account_id'   => ['integer']
         ];
     }
 
@@ -42,7 +42,7 @@ class ProviderAddWithdrawalFormRequest extends FormRequest {
         return [
             'provider_id'       => 'provider_id is integer and required',
             'withdraw_value'    => 'withdraw_value is float and required',
-            'bank_account_id'   => 'bank_account_id is int and required'
+            'bank_account_id'   => 'bank_account_id is int'
         ];
     }
 

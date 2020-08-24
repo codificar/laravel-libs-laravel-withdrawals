@@ -43,6 +43,11 @@ class ProviderAddWithdrawalResource extends JsonResource {
         $balance = $this['current_balance'];
         $ledger = $this['ledger'];
         $bankAccountId = $this['bank_account_id'];
+        
+        //Get the bankAccountId. If provider not select the bank, so get the first bank
+        if(!$bankAccountId) {
+            $bankAccountId = LedgerBankAccount::where('ledger_id', '=' , $ledger->id)->first()->id;
+        }
 
         // Check if withdraw isn't enabled
         if ($settings['with_draw_enabled'] == false) {
