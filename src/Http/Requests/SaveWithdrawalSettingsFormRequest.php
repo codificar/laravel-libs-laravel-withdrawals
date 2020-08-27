@@ -32,7 +32,7 @@ class SaveWithdrawalSettingsFormRequest extends FormRequest {
         return [
             'settings.rem_company_name'     => ['required', 'string'],
             'settings.rem_cpf_or_cnpj'      => ['required', 'string'],
-            'settings.rem_document'         => ['required', 'integer'],
+            'settings.rem_document'         => ['required'],
             'settings.rem_agency'           => ['required', 'integer'],
             'settings.rem_agency_dv'        => ['required', 'integer'],
             'settings.rem_account'          => ['required', 'integer'],

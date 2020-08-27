@@ -58,6 +58,13 @@ class Withdrawals extends Eloquent
                 ->where('finance.reason', '=', 'WITHDRAW')
                 ->orderBy('withdraw.id', 'desc')
                 ->get();
+
+            
+            //Converte o valor negativo para positivo
+            foreach($withdrawalsSummary as $withdraw) {
+                $withdraw->value = -1 * $withdraw->value;
+            }
+
             $response = array(
                 'success' => true,
                 'provider_id' => null,
@@ -98,6 +105,12 @@ class Withdrawals extends Eloquent
                     ->orderBy('finance.id', 'desc')
                     ->get();
             }
+
+            //Converte o valor negativo para positivo
+            foreach($withdrawalsSummary as $withdraw) {
+                $withdraw->value = -1 * $withdraw->value;
+            }
+            
             $response = array(
                 'success' => true,
                 'provider_id' => isset($provider_id) ? $provider_id : null,

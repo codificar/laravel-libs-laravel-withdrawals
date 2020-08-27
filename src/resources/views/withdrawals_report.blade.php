@@ -52,7 +52,7 @@
 
 	@case('provider')
 		@section('content')
-		<div id="VueJs">
+		<div id="VueJs" class="col-md-12">
         @break
 	
     @default
@@ -64,7 +64,6 @@
 		id="{{ $id }}"
 		enviroment="{{ $enviroment }}"
 		with-draw-request-route="{{ $enviroment == 'admin' ? null : URL::Route($enviroment.'WithdrawAdd') }}"
-		withdrawals-summary-route="{{ URL::Route($enviroment.'WithdrawalsSummaryRoute') }}"
 		create-bank-account-route="{{ $enviroment == 'admin' ? null : URL::Route($enviroment.'AddBankAccount') }}"
 		financial-entry-route="{{ $enviroment == 'admin' ? URL::Route('addFinancialEntry',[$user_provider_type, $id]) : '' }}"
 		finance-types="{{ json_encode($types) }}" 
