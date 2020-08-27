@@ -18,8 +18,6 @@ class AddWithdrawalsToMenu extends Migration
 
         $cnabSettings = Permission::updateOrCreate(['name' => 'Cnab Settings'] , ['name' => 'Cnab Settings', 'parent_id' => 2319, 'order' => 915, 'is_menu' => 1, 'url' => '/admin/libs/cnab_settings', 'icon' => 'mdi mdi-bank']);
 
-        ProfilePermission::updateOrCreate(['permission_id' => $withdrawalsReport->id], ['profile_id' => 3, 'permission_id' => $withdrawalsReport->id]);
-        ProfilePermission::updateOrCreate(['permission_id' => $cnabSettings->id], ['profile_id' => 3, 'permission_id' => $cnabSettings->id]);
     }
 
     /**
