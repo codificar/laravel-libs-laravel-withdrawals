@@ -37,7 +37,8 @@ class getWithdrawSettingsResource extends JsonResource {
         return [
             'success' => true,
             'withdraw_settings' => $this['withdraw_settings'],
-            'current_balance' => $this['current_balance']
+            'current_balance' => $this['current_balance'],
+            'provider_banks' => $this['provider_banks']
         ];
     }
 

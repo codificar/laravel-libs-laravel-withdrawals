@@ -94,12 +94,15 @@ class WithdrawalsController extends Controller {
 
         // Get the current balance from ledger. 
         $currentBalance = Finance::sumValueByLedgerId($provider->ledger->id);
-        
+
+        // Get the current balance from ledger. 
+        $providerBanks = Withdrawals::getledgerBankAccount($provider->ledger->id);
 
         // Return data
 		return new getWithdrawSettingsResource([
             'withdraw_settings' => $withDrawSettings,
-            'current_balance'    => $currentBalance
+            'current_balance'   => $currentBalance,
+            'provider_banks'    => $providerBanks
 		]);
 
     }

@@ -266,4 +266,20 @@ class Withdrawals extends Eloquent
             ->update(['cnab_file_id' => null]
         );
     }
+
+
+    public static function getledgerBankAccount($ledgerId)
+    {
+        $query = DB::table('ledger_bank_account')
+            ->select(
+                'ledger_bank_account.id as id', 
+                'ledger_bank_account.account as account', 
+                'bank.name as bank'
+            )
+            ->where('ledger_bank_account.ledger_id', '=', $ledgerId)
+            ->join('bank', 'ledger_bank_account.bank_id', 'bank.id')
+            ->get();
+
+        return $query;
+    }
 }
