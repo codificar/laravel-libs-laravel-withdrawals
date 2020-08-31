@@ -56,6 +56,8 @@ Route::group(array('namespace' => 'Codificar\Withdrawals\Http\Controllers'), fun
         Route::post('/report', 'WithdrawalsController@getWithdrawalsReport');
     
         Route::post('/add', 'WithdrawalsController@addWithDraw');
+
+        Route::post('/settings', 'WithdrawalsController@getWithdrawSettings');
     });
 
 });

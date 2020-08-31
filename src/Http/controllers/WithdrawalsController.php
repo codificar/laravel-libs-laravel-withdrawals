@@ -21,6 +21,7 @@ use Codificar\Withdrawals\Http\Resources\ProviderAddWithdrawalResource;
 use Codificar\Withdrawals\Http\Resources\ConfirmWithdrawResource;
 use Codificar\Withdrawals\Http\Resources\saveCnabSettingsResource;
 use Codificar\Withdrawals\Http\Resources\SendRetFileResource;
+use Codificar\Withdrawals\Http\Resources\getWithdrawSettingsResource;
 
 //Gerar arquivo de remessa CNAB
 use \CnabPHP\Remessa;
@@ -37,23 +38,10 @@ class WithdrawalsController extends Controller {
         $provider = Provider::find($providerId);
         
         $withdrawals_report = Withdrawals::getWithdrawalsSummary($provider->ledger->id, 'provider');
-
-
-        $withDrawSettings = array(
-            'with_draw_enabled' => Settings::getWithDrawEnabled(),
-            'with_draw_max_limit' => Settings::getWithDrawMaxLimit(),
-            'with_draw_min_limit' => Settings::getWithDrawMinLimit(),
-            'with_draw_tax' => Settings::getWithDrawTax()
-        );
-
-        // Get the current balance from ledger. 
-        $currentBalance = Finance::sumValueByLedgerId($provider->ledger->id);
         
         // Return data
 		return new ProviderWithdrawalsReportResource([
-            'withdrawals_report' => $withdrawals_report,
-            'withdraw_settings' => $withDrawSettings,
-            'current_balance'    => $currentBalance
+            'withdrawals_report' => $withdrawals_report
 		]);
     }
 
@@ -89,6 +77,34 @@ class WithdrawalsController extends Controller {
 		]);
 
     }
+
+    public function getWithdrawSettings()
+    {
+
+        // Get the provider id (some projects is 'provider_id' and others is just 'id')
+        $providerId = Input::get('provider_id') ? Input::get('provider_id') : Input::get('id');
+        $provider = Provider::find($providerId);
+
+        $withDrawSettings = array(
+            'with_draw_enabled' => Settings::getWithDrawEnabled(),
+            'with_draw_max_limit' => Settings::getWithDrawMaxLimit(),
+            'with_draw_min_limit' => Settings::getWithDrawMinLimit(),
+            'with_draw_tax' => Settings::getWithDrawTax()
+        );
+
+        // Get the current balance from ledger. 
+        $currentBalance = Finance::sumValueByLedgerId($provider->ledger->id);
+        
+
+        // Return data
+		return new getWithdrawSettingsResource([
+            'withdraw_settings' => $withDrawSettings,
+            'current_balance'    => $currentBalance
+		]);
+
+    }
+
+    
 
      /**
      * View the withdrawals report

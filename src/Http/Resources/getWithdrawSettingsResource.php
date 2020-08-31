@@ -6,25 +6,25 @@ use Carbon\Carbon;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
- * Class ProviderWithdrawalsReportResource
+ * Class getWithdrawSettingsResource
  *
  * @package MotoboyApp
  *
  *
  * @OA\Schema(
- *         schema="ProviderWithdrawalsReportResource",
+ *         schema="getWithdrawSettingsResource",
  *         type="object",
- *         description="Retorno Retorno do relatorio de saques do prestador",
+ *         description="Retorna as configuracoes do saque",
  *         title="Withdrawals Details Resource",
  *        allOf={
- *           @OA\Schema(ref="#/components/schemas/ProviderWithdrawalsReportResource"),
+ *           @OA\Schema(ref="#/components/schemas/getWithdrawSettingsResource"),
  *           @OA\Schema(
  *              required={"success", "request"},
  *           )
  *       }
  * )
  */
-class ProviderWithdrawalsReportResource extends JsonResource {
+class getWithdrawSettingsResource extends JsonResource {
 
     /**
      * Transform the resource into an array.
@@ -36,7 +36,8 @@ class ProviderWithdrawalsReportResource extends JsonResource {
 
         return [
             'success' => true,
-            'withdrawals_report' => $this['withdrawals_report']
+            'withdraw_settings' => $this['withdraw_settings'],
+            'current_balance' => $this['current_balance']
         ];
     }
 
