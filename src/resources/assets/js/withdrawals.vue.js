@@ -8,6 +8,9 @@ import VueResource from 'vue-resource';
 
 import VueTheMask from 'vue-the-mask';
 
+// Cnab settings
+import CnabSettings from './pages/cnab_settings.vue';
+
 // Withdrawals settings
 import WithdrawalsSettings from './pages/withdrawals_settings.vue';
 
@@ -81,6 +84,7 @@ new Vue({
     },
 
     components: {
+        cnabsettings: CnabSettings,
         withdrawalssettings: WithdrawalsSettings,
         withdrawalsreport: withdrawalsreport
     },

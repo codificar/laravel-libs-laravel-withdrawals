@@ -18,7 +18,7 @@
 
 @section('content')
 	<div id="VueJs">
-		<cnabsettings 
+		<withdrawalssettings 
 			settings="{{ json_encode($settings)}}"	
 			cnab-files="{{ json_encode($cnabFiles)}}"	
 			total-requested="{{ $totalRequested }}"
@@ -26,7 +26,7 @@
 			total-error="{{ $totalError }}"
 			currency-symbol="{{\Settings::getCurrency()}}">
 		>
-		</cnabsettings>
+		</withdrawalssettings>
 		
 	</div>
 

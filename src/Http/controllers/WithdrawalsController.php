@@ -116,7 +116,7 @@ class WithdrawalsController extends Controller {
      */
     public function getCnabSettings() {
 
-        $settings = Withdrawals::getWithdrawalsSettings();
+        $settings = Withdrawals::getCnabSettings();
         $cnabFiles = CnabFiles::getCnabfiles();
         $totalRequested = Withdrawals::getTotalValueRequestedWithdrawals();
         $totalAwaitingReturn = Withdrawals::getTotalValueAwaitingReturnWithdrawals();
@@ -128,6 +128,23 @@ class WithdrawalsController extends Controller {
                 'totalRequested' => $totalRequested,
                 'totalAwaitingReturn' => $totalAwaitingReturn,
                 'totalError' => $TotalError
+            ]);
+    
+    }
+
+     /**
+     * View the withdrawals report
+     * 
+     * @return View
+     */
+    public function getWithdrawalsSettings() {
+
+        $settings = Withdrawals::getWithdrawalsSettings();
+
+        return View::make('withdrawals::withdrawals_settings')
+            ->with([
+                'settings' => $settings
+
             ]);
     
     }
@@ -161,7 +178,7 @@ class WithdrawalsController extends Controller {
         if($total > 0) {
 
             //Pega as configuracoes do banco
-            $getSettings = Withdrawals::getWithdrawalsSettings();
+            $getSettings = Withdrawals::getCnabSettings();
             $settings = array();
             foreach($getSettings as $eachSetting){
                 $settings[$eachSetting->key] = $eachSetting->value;

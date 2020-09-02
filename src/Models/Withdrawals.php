@@ -164,7 +164,7 @@ class Withdrawals extends Eloquent
             );
     }
 
-    public static function getWithdrawalsSettings() {
+    public static function getCnabSettings() {
 
         $keys = array(
             "rem_company_name",
@@ -177,6 +177,24 @@ class Withdrawals extends Eloquent
             "rem_bank_code",
             "rem_agreement_number",
             "rem_transfer_type"
+        );
+
+        $query = DB::table('settings')
+            ->select('key', 'value')
+            ->whereIn('key', $keys)
+            ->get();
+
+        return $query;
+    }
+
+
+    public static function getWithdrawalsSettings() {
+
+        $keys = array(
+            'with_draw_enabled',
+            'with_draw_max_limit',
+            'with_draw_min_limit',
+            'with_draw_tax'
         );
 
         $query = DB::table('settings')

@@ -4,51 +4,42 @@
 // Rotas das views do laravel/vue
 Route::group(array('namespace' => 'Codificar\Withdrawals\Http\Controllers'), function () {
     
-    // (View) Rotas de configuracoes do saque (cnab)
+    // Rotas de saques do admin
     Route::group(['prefix' => 'admin/libs', 'middleware' => 'auth.admin'], function () {
-        Route::get('/cnab_settings', array('as' => 'webAdminWithdrawalsSettings', 'uses' => 'WithdrawalsController@getCnabSettings'));
-        Route::post('/cnab_settings/save', 'WithdrawalsController@saveCnabSettings');
-        Route::post('/cnab_settings/create_cnab_file', 'WithdrawalsController@createCnabFile');
-        Route::post('/cnab_settings/send_ret_file', 'WithdrawalsController@sendRetFile');
-        Route::post('/cnab_settings/delete_cnab_file', 'WithdrawalsController@deleteCnabFile');
+
+        //Configuracoes cnab
+        Route::group(['prefix' => '/cnab_settings'], function () {
+            Route::get('/', array('as' => 'webAdminCnabSettings', 'uses' => 'WithdrawalsController@getCnabSettings'));
+            Route::post('/save', 'WithdrawalsController@saveCnabSettings');
+            Route::post('/create_cnab_file', 'WithdrawalsController@createCnabFile');
+            Route::post('/send_ret_file', 'WithdrawalsController@sendRetFile');
+            Route::post('/delete_cnab_file', 'WithdrawalsController@deleteCnabFile');
+        });
+
+        //Relatorio de saques
+        Route::group(['prefix' => '/withdrawals'], function () {
+            Route::get('/', array('as' => 'webAdminWithdrawalsReport', 'uses' => 'WithdrawalsController@getWithdrawalsReportWeb'));
+            Route::post('/confirm_withdraw', array('as' => 'webAdminConfirmWithdraw', 'uses' => 'WithdrawalsController@confirmWithdraw'));
+        });
+
+        //Configuracoes de saque
+        Route::group(['prefix' => '/withdrawals_settings'], function () {
+            Route::get('/', array('as' => 'webAdminWithdrawalsSettings', 'uses' => 'WithdrawalsController@getWithdrawalsSettings'));
+        });
     });
 
-    // (View) Rota para relatorio de saques do admin
-    Route::group(['prefix' => '/admin/libs', 'middleware' => 'auth.admin'], function () {
-        Route::get('/withdrawals', array('as' => 'webAdminWithdrawalsReport', 'uses' => 'WithdrawalsController@getWithdrawalsReportWeb'));
-    });
-
-    // (View) Rota para relatorio de saques do provider
+    // Rota para relatorio de saques do provider
     Route::group(['prefix' => '/provider/libs', 'middleware' => 'auth.provider'], function () {
         Route::get('/withdrawals', array('as' => 'webProviderWithdrawalsReport', 'uses' => 'WithdrawalsController@getWithdrawalsReportWeb'));
-    });
-
-    // (View) Rota para relatorio de saques do user
-    // Route::group(['prefix' => '/user/libs', 'middleware' => 'auth.user'], function () {
-    //     Route::get('/withdrawals', array('as' => 'webUserWithdrawalsReport', 'uses' => 'WithdrawalsController@getWithdrawalsReportWeb'));
-    // });
-
-    
-    // (Api) Rotas da api dar baixa no saque manualmente, com envio de comprovante (foto) e data
-    Route::group(['prefix' => '/admin/libs', 'middleware' => 'auth.admin'], function () {
-        Route::post('/withdrawals/confirm_withdraw', array('as' => 'webAdminConfirmWithdraw', 'uses' => 'WithdrawalsController@confirmWithdraw'));
-    });
-
-    // (Api) Rotas da api para dicionar um saque
-    Route::group(['prefix' => '/provider/libs', 'middleware' => 'auth.provider'], function () {
         Route::post('/withdrawals/WithdrawAdd', array('as' => 'providerWithdrawAdd', 'uses' => 'WithdrawalsController@addWithDraw'));
-    });
-
-    // (Api) Rota para um prestador adicionar um banco
-    Route::group(['prefix' => '/provider/libs', 'middleware' => 'auth.provider'], function () {
         Route::post('/withdrawals/create-user-bank-account', array('as' => 'providerAddBankAccount', 'uses' => 'WithdrawalsController@createUserBankAccount'));
     });
-   
+
 });
 
 
 
-// Rotas dos apps
+// Rotas do app provider
 Route::group(array('namespace' => 'Codificar\Withdrawals\Http\Controllers'), function () {
 
     Route::group(['prefix' => 'libs/withdrawals', 'middleware' => 'auth.provider_api:api'], function () {

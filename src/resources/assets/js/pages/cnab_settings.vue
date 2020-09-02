@@ -1,0 +1,574 @@
+<script>
+import axios from "axios";
+import moment from "moment";
+export default {
+  props: [
+    "Settings",
+	"CnabFiles",
+	"TotalRequested",
+	"TotalAwaitingReturn",
+	"TotalError",
+	"currencySymbol"
+  ],
+  data() {
+    return {
+      settings: {},
+	  cnab_files: {},
+	  retFile: '',
+	  current_ret_file_id: null
+    };
+  },
+  methods: {
+
+	showErrorMsg(errors) {
+		this.$swal({
+			title: this.trans("withdrawals.error"),
+			html:
+			'<label class="alert alert-danger alert-dismissable text-left">' +
+			errors +
+			"</label>",
+			type: "error"
+		}).then(result => {});
+	},
+
+	/**
+	* This method call a api and realod the page after success response
+	*/
+	postApiAndRealod(route, params, successMsg) {
+		console.log('params:: ', successMsg);
+		new Promise((resolve, reject) => {
+            axios
+              .post(route, params)
+              .then(response => {
+                console.log(response);
+                if (response.data.success) {
+					this.$swal({
+						title: successMsg,
+						type: "success"
+					}).then(result => {
+						location.reload();
+					});
+                } else {
+                  this.$swal({
+                    title: this.trans("withdrawals.error"),
+                    html:
+                      '<label class="alert alert-danger alert-dismissable text-left">' +
+                      response.data.errors +
+                      "</label>",
+                    type: "error"
+                  }).then(result => {});
+                }
+              })
+              .catch(error => {
+                console.log(error);
+                reject(error);
+                return false;
+              });
+          });
+	},
+
+    setWithdrawalsSettings() {
+      this.$swal({
+        title: this.trans("withdrawals.save_question"),
+        type: "warning",
+        showCancelButton: true,
+        confirmButtonText: this.trans("withdrawals.yes"),
+        cancelButtonText: this.trans("withdrawals.no")
+      }).then(result => {
+        if (result.value) {
+
+			//Call api
+			this.postApiAndRealod(
+				"/admin/libs/cnab_settings/save", 
+				{ settings: this.settings },
+				this.trans("withdrawals.success_set_withdrawals")
+			);
+
+        }
+      });
+    },
+	deleteRemFile(rem_id) {
+		this.$swal({
+			title: this.trans('withdrawals.delete'),
+			text: this.trans('withdrawals.delete_msg'),
+			type: 'question',
+			showCancelButton: true,
+			confirmButtonText: this.trans('withdrawals.yes'),
+			cancelButtonText: this.trans('withdrawals.no')
+			}).then((result) => {
+			if (result.value) {
+
+				//Chama a api para deletar o arquivo remessa delete_cnab_file
+				this.postApiAndRealod(
+					"/admin/libs/cnab_settings/delete_cnab_file", 
+					{ cnab_id: rem_id },
+					this.trans("withdrawals.file_was_deleted")
+				);
+			
+			}
+		});
+	},
+	createNewRemFile() {
+
+		//Call api
+		this.postApiAndRealod(
+			"/admin/libs/cnab_settings/create_cnab_file", 
+			{ settings: this.settings },
+			this.trans("withdrawals.success_created_cnab")
+		);
+		
+	},
+
+	reloadPageWithMessage(message) {
+		console.log("caiu no reload");
+		this.$swal({
+				title: message,
+				type: 'success'
+			}).then((result) => { location.reload(); } );
+	},
+
+	showModalCreateCnab() {
+		//open modal
+		$("#modalCreateCnab").modal("show");
+	},
+
+	handleFileUpload: function(id) {
+		console.log(this.$refs.myFiles.files);
+		this.retFile = this.$refs.myFiles.files[0];
+	},
+
+	sendRetFile(currentId) {
+
+		//when click in modal, reset the image
+		this.retFile = '';
+		$("#modalFormRet").trigger("reset");
+
+		//set the current modal associed id
+		this.current_ret_file_id = currentId;
+
+		//open modal
+		$("#modalSendRetFile").modal("show");
+	},
+
+	confirmSendRetFile(id) {
+
+		let formData = new FormData();
+		formData.append('cnab_id', this.current_ret_file_id);
+		formData.append('cnab_ret_file', this.retFile);
+
+		axios.post( '/admin/libs/cnab_settings/send_ret_file', formData, {
+			headers: {
+				'Content-Type': 'multipart/form-data'
+			}
+		}).then(response => {
+			console.log('dados:', response);
+			$('#modalSendRetFile').modal('hide');
+
+			if (response.data.success) {
+				this.reloadPageWithMessage(this.trans("withdrawals.ret_file_uploaded"));
+			} else {
+				this.showErrorMsg(response.data.errors);
+			}
+		})
+		.catch(error => {
+			$('#modalSendRetFile').modal('hide');
+			console.log(error);
+			this.showErrorMsg(this.trans("withdrawals.error"));
+			return false;
+		});
+
+	}
+	
+  },
+  created() {
+	var aux;
+	var settingsJson = {};
+	this.Settings ? (aux = JSON.parse(this.Settings)) : null;
+	aux.forEach(function myFunction(item, index) {
+		settingsJson[item.key] = item.value
+	});
+	this.settings = settingsJson;
+	this.cnab_files = JSON.parse(this.CnabFiles );
+  }
+};
+</script>
+<template>
+  <div>
+    <!-- Row -->
+    <div class="tab-content">
+      <div class="col-lg-12">
+        <div class="card card-outline-info">
+          <div class="card-header">
+            <h4 class="m-b-0 text-white">{{trans('withdrawals.rem_settings')}}</h4>
+          </div>
+          <div class="card-block">
+            <div class="row">
+              <form data-toggle="validator" class="col-lg-12" v-on:submit.prevent="setWithdrawalsSettings()">
+				
+				<div class="row">
+					<!-- Banco -->
+					<div class="col-md-6 col-sm-12">
+						<div class="form-group">
+							<label class="control-label">{{trans('withdrawals.rem_bank') }}</label>
+							<select
+								v-model="settings.rem_bank_code"
+								name="rem_bank_code"
+								class="select form-control"
+							>
+							<option
+								v-for="method in [
+									{
+										'value': '104', 
+										'name': 'Caixa'
+									},
+									{
+										'value': '01', 
+										'name': 'Banco do Brasil (em desenvolvimento)'
+									}
+								]"
+								v-bind:value="method.value"
+								v-bind:key="method.value"
+							>{{ method.name }}</option>
+							</select>
+						</div>
+					</div>
+
+					<!-- Codigo do convenio do banco -->
+					<div class="col-md-6 col-sm-12">
+						<div class="form-group">
+							<label class="control-label">{{trans('withdrawals.rem_agreement_number') }}</label>
+							<input
+								type="text"
+								class="form-control"
+								name="rem_agreement_number"
+								id="rem_agreement_number"
+								required
+								v-mask="['######']"
+								v-model="settings.rem_agreement_number"
+							/>
+						</div>
+					</div>
+				</div>
+
+				<div class="row">
+					<!-- Nome da empresa -->
+					<div class="col-md-6 col-sm-12">
+						<div class="form-group">
+							<label class="control-label">{{trans('withdrawals.rem_company_name') }}</label>
+							<input
+							type="text"
+							class="form-control"
+							name="rem_company_name"
+							id="rem_company_name"
+							maxlength="30"
+							required
+							v-model="settings.rem_company_name"
+							/>
+						</div>
+					</div>
+
+					<!-- TED ou DOC -->
+					<div class="col-md-6 col-sm-12">
+						<div class="form-group">
+							<label class="control-label">{{trans('withdrawals.rem_transfer_type') }}</label>
+							<select
+								v-model="settings.rem_transfer_type"
+								name="rem_transfer_type"
+								class="select form-control"
+							>
+							<option
+								v-for="method in [
+									{
+										'value': 'ted', 
+										'name': 'TED'
+									},
+									{
+										'value': 'doc', 
+										'name': 'DOC'
+									}
+								]"
+								v-bind:value="method.value"
+								v-bind:key="method.value"
+							>{{ method.name }}</option>
+							</select>
+						</div>
+					</div>
+				</div>
+
+				<div class="row">
+					<!-- TIPO: CPF ou CNPJ -->
+					 <div class="col-md-6 col-sm-12">
+						<div class="form-group">
+							<label class="control-label">{{trans('withdrawals.rem_cpf_or_cnpj') }}</label>
+							<select
+								v-model="settings.rem_cpf_or_cnpj"
+								name="rem_cpf_or_cnpj"
+								class="select form-control"
+							>
+							<option
+								v-for="method in [
+									{
+										'value': 'cpf', 
+										'name': 'CPF'
+									},
+									{
+										'value': 'cnpj', 
+										'name': 'CNPJ'
+									}
+								]"
+								v-bind:value="method.value"
+								v-bind:key="method.value"
+							>{{ method.name }}</option>
+							</select>
+						</div>
+					</div>
+
+					<!-- Valor do CPF ou CNPJ -->
+					<div class="col-md-6 col-sm-12">
+						<div class="form-group">
+							<label class="control-label">{{trans('withdrawals.rem_document') }}</label>
+							<the-mask
+							type="text"
+							class="form-control"
+							name="rem_document"
+							id="rem_document"
+							:mask="['###.###.###-##', '##.###.###/####-##']"
+							required
+							v-model="settings.rem_document"
+							/>
+						</div>
+					</div>
+				</div>
+
+				<div class="row">
+					<!-- Agencia -->
+					<div class="col-md-6 col-sm-12">
+						<div class="form-group">
+							<label class="control-label">{{trans('withdrawals.rem_agency') }}</label>
+							<input
+							type="text"
+							class="form-control"
+							name="rem_agency"
+							id="rem_agency"
+							v-mask="['#####']"
+							required
+							v-model="settings.rem_agency"
+							/>
+						</div>
+					</div>
+
+					<!-- Digito da agencia -->
+					<div class="col-md-6 col-sm-12">
+						<div class="form-group">
+							<label class="control-label">{{trans('withdrawals.rem_agency_dv') }}</label>
+							<input
+							type="text"
+							class="form-control"
+							name="rem_agency_dv"
+							id="rem_agency_dv"
+							v-mask="['#']"
+							required
+							v-model="settings.rem_agency_dv"
+							/>
+						</div>
+					</div>
+				</div>
+
+
+				<div class="row">
+					<!-- Conta -->
+					<div class="col-md-6 col-sm-12">
+						<div class="form-group">
+							<label class="control-label">{{trans('withdrawals.rem_account') }}</label>
+							<input
+							type="text"
+							class="form-control"
+							name="rem_account"
+							id="rem_account"
+							v-mask="['############']"
+							required
+							v-model="settings.rem_account"
+							/>
+						</div>
+					</div>
+
+					<!-- Digito da conta -->
+					<div class="col-md-6 col-sm-12">
+						<div class="form-group">
+							<label class="control-label">{{trans('withdrawals.rem_account_dv') }}</label>
+							<input
+							type="text"
+							class="form-control"
+							name="rem_account_dv"
+							id="rem_account_dv"
+							v-mask="['#######']"
+							required
+							v-model="settings.rem_account_dv"
+							/>
+						</div>
+					</div>
+				</div>
+
+				<button type="submmit" class="btn btn-success pull-right">{{trans('withdrawals.save')}}</button>
+              
+			  </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+	<!-- Row -->
+    <div class="tab-content">
+      <div class="col-lg-12">
+        <div class="card card-outline-info">
+          <div class="card-header">
+            <h4 class="m-b-0 text-white">{{trans('withdrawals.generate_file')}}</h4>
+          </div>
+            <div class="row">
+				<div class="col-lg-12">
+					<div class="card">
+						<div class="card-block">
+							</h3>
+							<div class="card-block">
+
+								<table class="table table-bordered">
+									<tr>
+										<th>Valor a pagar</th>
+										<th>Aguardando retorno</th>
+										<th>Valor com erros</th>
+									</tr>
+									<tr>
+										<td class="text-success">{{ currency_format(this.TotalRequested, this.currencySymbol) }}</td>
+										<td>{{ currency_format(this.TotalAwaitingReturn, this.currencySymbol) }}</td>
+										<td>{{ currency_format(this.TotalError, this.currencySymbol) }}</td>
+										
+									</tr>
+								</table>
+
+								<button class="btn btn-success" v-on:click="showModalCreateCnab()">{{ trans('withdrawals.create_file') }}</button>
+
+								<table style="margin-top: 15px !important" class="table table-bordered">
+									<tr>
+										<th>{{ trans("withdrawals.id") }}</th>
+										<th>{{ trans("withdrawals.status") }}</th>
+										<th>{{ trans("withdrawals.rem_file") }}</th>
+										<th>{{ trans("withdrawals.rem_date") }}</th>
+										<th>{{ trans("withdrawals.ret_file") }}</th>
+										<th>{{ trans("withdrawals.ret_date") }}</th>
+										<th>{{ trans("withdrawals.total_estimated") }}</th>
+										<th>{{ trans("withdrawals.total_paid") }}</th>
+										<th>{{ trans("withdrawals.action") }}</th>
+									</tr>
+									<tr v-for="row in cnab_files" v-bind:key="row.id">
+										<td>{{ row.id }}</td>
+										<td>
+											<a v-if="row.ret_url_file"  >{{ trans("withdrawals.concluded") }}</a>
+											<a v-else class="text-danger">{{ trans("withdrawals.awaiting_return") }}</a>
+										</td>
+										<td><a :href="row.rem_url_file" download>Baixar</a></td>
+										<td>{{ row.date_rem }}</td>
+										<td>
+											<a v-if="row.ret_url_file" :href="row.ret_url_file" download>Baixar</a>
+											<a v-else v-on:click="sendRetFile(row.id)" style="cursor: pointer;"class="text-primary">Enviar</a>
+										</td>
+										<td>{{ row.date_ret }}</td>
+										<td>{{ currency_format(row.rem_total, currencySymbol) }}</td>
+										<td>{{ currency_format(row.ret_total, currencySymbol) }}</td>
+										
+										<td>
+											<!-- So pode excluir um arquivo de remessa se nao tiver um retorno atrelado -->
+											<a v-if="row.ret_url_file">N/A</a>
+											<div v-else-if="!row.ret_url_file" class="dropdown">
+												<button class="btn btn-info dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown">
+													{{trans('withdrawals.action') }}
+													<span class="caret"></span>
+												</button>
+
+												<div class="dropdown-menu dropdown-menu-right" role="menu" aria-labelledby="dropdownMenu1">
+													<a 
+														class="dropdown-item" 
+														style="cursor: pointer;" 
+														v-on:click="deleteRemFile(row.id)"
+													>
+														{{ trans('withdrawals.delete') }}
+													</a>
+												</div>
+											</div>
+										</td>
+
+									</tr>
+								</table>
+
+
+								 <!-- modal enviar arquivo remessa-->
+								<div class="modal" :id="'modalCreateCnab'" tabindex="-1" role="dialog" aria-labelledby="modalCreateCnabLabel">
+									<div class="modal-dialog" role="document">
+										<div class="modal-content">
+											<div class="modal-header">
+												<h4 class="modal-title">Criar arquivo de remessa</h4>
+												<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+											</div>
+											<div class="modal-body">
+												<form id="modalForm">
+													<label>Observações</label>
+													<label>1. Caso seja gerado um arquivo de remessa, mas você não enviar ao banco no mesmo dia, o banco irá recusar. Nesse caso, é possível deletar o arquivo de remessa e gerar um novo.</label>
+													<label>2. Ao deletar um arquivo de remessa, todos os saques com status "Aguardando remessa" atrelados ao arquivo, voltarão a ser "Solicitado"</label>
+													<label>3. Apenas arquivos remessa que não possui retorno atrelados podem ser deletados.</label>
+													<label>4. Se nas configurações acima estiver configurado como ambiente "Teste", os saques com status "Solicitado" não serão afetados.</label>
+													
+													<button type="button" v-on:click="createNewRemFile()" class="btn btn-success right">Gerar arquivo remessa</button>
+													
+												</form>
+											</div>
+											
+										</div>
+									</div>
+								</div>
+								<!-- /.modal -->
+
+
+								<!-- modal enviar arquivo retorno-->
+								<div class="modal" :id="'modalSendRetFile'" tabindex="-1" role="dialog" aria-labelledby="modalmodalSendRetFileLabel">
+									<div class="modal-dialog" role="document">
+										<div class="modal-content">
+											<div class="modal-header">
+												<h4 class="modal-title">Arquivo de retorno</h4>
+												<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+											</div>
+											<div class="modal-body">
+												<form id="modalFormRet">
+													<label for="confirm_withdraw_picture">Envie o arquivo de retorno</label>
+													<input 
+														type="file" 
+														:id="'file'" 
+														:ref="'myFiles'" 
+														class="form-control-file" 
+														@change="handleFileUpload"
+													>
+
+													
+													<br>
+													
+													<button type="button" v-on:click="confirmSendRetFile(this.current_ret_file_id)" class="btn btn-success right">Enviar</button>
+													
+												</form>
+											</div>
+											
+										</div>
+									</div>
+								</div>
+								<!-- /.modal -->
+
+							</div>
+						</div>
+					</div>
+				</div>
+            </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</template>
