@@ -11,9 +11,10 @@ use File;
 
 //FormRequest
 use Codificar\Withdrawals\Http\Requests\ProviderAddWithdrawalFormRequest;
-use Codificar\Withdrawals\Http\Requests\SaveWithdrawalSettingsFormRequest;
+use Codificar\Withdrawals\Http\Requests\SaveCnabSettingsFormRequest;
 use Codificar\Withdrawals\Http\Requests\ConfirmWithdrawFormRequest;
 use Codificar\Withdrawals\Http\Requests\SendRetFileFormRequest;
+use Codificar\Withdrawals\Http\Requests\SaveWithdrawalsSettingsFormRequest;
 
 //Resource
 use Codificar\Withdrawals\Http\Resources\ProviderWithdrawalsReportResource;
@@ -22,6 +23,7 @@ use Codificar\Withdrawals\Http\Resources\ConfirmWithdrawResource;
 use Codificar\Withdrawals\Http\Resources\saveCnabSettingsResource;
 use Codificar\Withdrawals\Http\Resources\SendRetFileResource;
 use Codificar\Withdrawals\Http\Resources\getWithdrawSettingsResource;
+use Codificar\Withdrawals\Http\Resources\saveWithdrawalsSettingsResource;
 
 //Gerar arquivo de remessa CNAB
 use \CnabPHP\Remessa;
@@ -137,22 +139,31 @@ class WithdrawalsController extends Controller {
      * 
      * @return View
      */
-    public function getWithdrawalsSettings() {
+    public function getWithdrawalsSettingsWeb() {
 
         $settings = Withdrawals::getWithdrawalsSettings();
 
         return View::make('withdrawals::withdrawals_settings')
             ->with([
                 'settings' => $settings
-
             ]);
     
     }
 
-    public function saveCnabSettings(SaveWithdrawalSettingsFormRequest $request)
-    {
-        \Log::debug($request->settings['rem_bank_code']);
+    public function saveWithdrawalsSettings(SaveWithdrawalsSettingsFormRequest $request) {
 
+        // Return data
+		return new saveWithdrawalsSettingsResource([
+            "message" => 'sucess',
+            "with_draw_enabled" => $request->settings['with_draw_enabled'],
+            "with_draw_max_limit" => $request->settings['with_draw_max_limit'],
+            "with_draw_min_limit" => $request->settings['with_draw_min_limit'],
+            "with_draw_tax" => $request->settings['with_draw_tax']
+		]);
+    }
+
+    public function saveCnabSettings(SaveCnabSettingsFormRequest $request)
+    {
         // Return data
 		return new saveCnabSettingsResource([
             "message" => 'sucess',

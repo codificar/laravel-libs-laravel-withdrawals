@@ -7,10 +7,10 @@ use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Http\Exceptions\HttpResponseException;
 
 /**
- * Class SaveWithdrawalSettingsFormRequest
+ * Class SaveCnabSettingsFormRequest
  *
  */
-class SaveWithdrawalSettingsFormRequest extends FormRequest {
+class SaveCnabSettingsFormRequest extends FormRequest {
 
     public $ride;
     /**

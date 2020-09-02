@@ -24,7 +24,8 @@ Route::group(array('namespace' => 'Codificar\Withdrawals\Http\Controllers'), fun
 
         //Configuracoes de saque
         Route::group(['prefix' => '/withdrawals_settings'], function () {
-            Route::get('/', array('as' => 'webAdminWithdrawalsSettings', 'uses' => 'WithdrawalsController@getWithdrawalsSettings'));
+            Route::get('/', array('as' => 'webAdminWithdrawalsSettings', 'uses' => 'WithdrawalsController@getWithdrawalsSettingsWeb'));
+            Route::post('/save', array('as' => 'webAdminSaveWithdrawSettings', 'uses' => 'WithdrawalsController@saveWithdrawalsSettings'));
         });
     });
 
