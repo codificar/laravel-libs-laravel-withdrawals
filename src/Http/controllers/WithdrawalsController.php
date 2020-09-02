@@ -89,14 +89,13 @@ class WithdrawalsController extends Controller {
 
         $withDrawSettings = array(
             'with_draw_enabled' => Settings::getWithDrawEnabled(),
-            'with_draw_max_limit' => Settings::getWithDrawMaxLimit(),
-            'with_draw_min_limit' => Settings::getWithDrawMinLimit(),
-            'with_draw_tax' => Settings::getWithDrawTax()
+            'with_draw_max_limit' => currency_format(Settings::getWithDrawMaxLimit()),
+            'with_draw_min_limit' => currency_format(Settings::getWithDrawMinLimit()),
+            'with_draw_tax' => currency_format(Settings::getWithDrawTax())
         );
 
         // Get the current balance from ledger. 
-        $currentBalance = Finance::sumValueByLedgerId($provider->ledger->id);
-
+        $currentBalance = currency_format(Finance::sumValueByLedgerId($provider->ledger->id));
         // Get the current balance from ledger. 
         $providerBanks = Withdrawals::getledgerBankAccount($provider->ledger->id);
 
