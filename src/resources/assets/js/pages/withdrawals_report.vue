@@ -13,10 +13,9 @@ export default {
 		"WithDrawRequestRoute",
 		"CreateBankAccountRoute",
 		"FinancialEntryRoute",
-		"FinanceTypes",
-		"Holder",
 		"Ledger",
-		"Balance",
+		"WithdrawalsReport",
+		"CurrentBalance",
 		"BankAccounts",
 		"BankList",
 		"AccountTypes",
@@ -27,19 +26,19 @@ export default {
 		return {
 			id: "",
 			types: "", // Gets financial types to make the select field and use in comparations
-			holder: "", // Name of the user
 			ledger: "",
 			type_entry: "0", //Select field default option
-			balance: "", // Object with all entries received from the controller : .detailed_balance .previous_balance and .current_balance
-			current_balance: 0, //Balance of filtered entries
+			withdrawals_report: "",
+			current_balance: 0,
 			banks: [],
 			account_types: [],
 			bank_account_id: 0,
 			bank_accounts: [],
 			with_draw_settings: [],
 			url: window.location.href,
-            status: 0,
-            receipt: 0,
+            status: this.getUrlParams("status"),
+            receipt: this.getUrlParams("receipt"),
+			page: this.getUrlParams("page"),
 			confirm_withdraw_date: '',
 			fileWithdraw: '',
 			current_modal_id: null
@@ -50,23 +49,63 @@ export default {
 		modalnewbankaccount: ModalNewBankAccount
 	},
 	methods: {
-		//Calculates total balance from an array
-		totalize(balance) {
-			var totalizer = 0;
-			for (var i = 0; i < balance.length; i++) {
-				totalizer += parseFloat(balance[i].value);
-			}
-			return totalizer;
+
+		downloadWithdrawals() {
+				var status = "";
+				var receipt = "";
+
+				if(this.Enviroment == "admin") {
+					var route = "/admin/libs/withdrawals/download";
+				} else if(this.Enviroment == "provider") {
+					var route = "/provider/libs/withdrawals/download";
+				}
+				
+
+				if(this.status == "requested" || this.status == "awaiting_return" || this.status == "concluded" || this.status == "error") {
+					status = this.status;
+				}
+				if(this.receipt == 1 || this.receipt == "2" || this.receipt == 2 || this.receipt == "2") {
+					receipt = parseInt(this.receipt)
+				}
+
+				window.location.assign(
+					route + '?' +
+					'status=' + status + "&" +
+					'receipt=' + receipt
+				);
 		},
-		getWithdrawalsSummary(page = 1) {
-			// TODO getWithdrawalsSummary
-			console.log("aqui");
+
+		filterWithdrawals(page = 1) {
+			var status = "";
+			var receipt = "";
 			
+
+			if(this.Enviroment == "admin") {
+				var route = "/admin/libs/withdrawals"
+			} else if(this.Enviroment == "provider") {
+				var route = "/provider/libs/withdrawals"
+			}
+
+			if(this.status == "requested" || this.status == "awaiting_return" || this.status == "concluded" || this.status == "error") {
+				status = this.status;
+			}
+			if(this.receipt == 1 || this.receipt == "2" || this.receipt == 2 || this.receipt == "2") {
+				receipt = parseInt(this.receipt)
+			}
+
+			if(!parseInt(page)) {
+				page = 1;
+			}
+
+			window.location.assign(
+				route + '?' +
+				'status=' + status + "&" +
+				'receipt=' + receipt + "&" +
+				'page=' + page
+
+			);
 		},
-		downloadFinancialSummary() {
-			// TODO downloadFinancialSummary
-			console.log("download");
-		},
+
 		showModalRequestWithdraw() {
 			if (this.bank_account_id == 0 && this.bank_accounts.length > 0)
 				this.bank_account_id = this.bank_accounts[0].id;
@@ -157,8 +196,12 @@ export default {
 					return false;
 				});
 
-		}
-	},
+		},
+		getUrlParams(name){
+			if(name=(new RegExp('[?&]'+encodeURIComponent(name)+'=([^&]*)')).exec(location.search))
+				return decodeURIComponent(name[1]);
+		},
+	},	 
 
 	mounted() {
 		
@@ -166,12 +209,10 @@ export default {
 	
 	created() {
 		this.id = this.Id;
-		this.types = JSON.parse(this.FinanceTypes); //Types of transactions
-		this.holder = JSON.parse(this.Holder); //User/Provider Name
 		this.ledger = JSON.parse(this.Ledger); //User/Provider Object
-		this.balance = JSON.parse(this.Balance);
+		this.withdrawals_report = JSON.parse(this.WithdrawalsReport);
+		this.current_balance = JSON.parse(this.CurrentBalance)
 		this.total = 0;
-		this.current_balance = this.totalize(this.balance.detailed_balance);
 		this.bank_accounts = JSON.parse(this.BankAccounts); // User/provider BankAccounts
 		this.banks = JSON.parse(this.BankList); // Banks list
 		this.account_types = JSON.parse(this.AccountTypes); // Account types list
@@ -186,7 +227,7 @@ export default {
 			<modalrequestwithdraw v-show="with_draw_settings.with_draw_enabled == true" v-on:newBankAccount="showModalNewBankAccount" 
 					v-on:addWithDrawRequest="transactionSuccess" 
 					:ledger="ledger" :bank-accounts="bank_accounts" :bank-account-id="bank_account_id" 
-					:bank-list="banks" :with-draw-settings="with_draw_settings" :available-balance="balance.total_balance"
+					:bank-list="banks" :with-draw-settings="with_draw_settings" :available-balance="current_balance"
 					:with-draw-request-route="WithDrawRequestRoute"
 					:currency-symbol="currencySymbol">
 			</modalrequestwithdraw>
@@ -206,7 +247,6 @@ export default {
 							<div class="box box-warning">
 								<div class="box-header">
 									<h3 class="box-title">
-										{{ holder }}
 									</h3>
 								</div>
 								<form id="filter-account-statement" method="get" v-bind:action="url ">
@@ -214,31 +254,16 @@ export default {
 										
                                         <div class="row">
 											
-											<div v-if="Enviroment == 'admin'" class="col-md-3">
-                                                <div class="form-group">
-													<div class="form-group">
-														<label for="name" class=" control-label">{{ trans('withdrawals.name') }}*</label>
-														<input name="name" type="text" id="name" class="form-control input-lg" maxlenght="255" auto-focus="" :placeholder="trans('withdrawals.name')">
-													</div>
-                                                </div>
-                                            </div>
-                                            <div v-if="Enviroment == 'admin'" class="col-md-3">
-                                                <div class="form-group">
-													<div class="form-group">
-														<label for="bank" class=" control-label">{{ trans('withdrawals.bank') }}*</label>
-														<input name="bank" type="text" id="bank" class="form-control input-lg" maxlenght="255" auto-focus="" :placeholder="trans('withdrawals.bank')">
-													</div>
-                                                </div>
-                                            </div>
-
                                             <div class="col-md-3">
                                                 <div class="form-group">
                                                     <!--Select transaction type filter-->
                                                     <label for="giveName">{{trans('withdrawals.status') }}</label>
                                                     <select v-model="status" name="" class="select form-control">
 														<option value="0" selected="selected"></option>
-                                                        <option value="1">{{trans('withdrawals.withdrawal_requested') }}</option>
-                                                        <option value="2">{{trans('withdrawals.withdrawal_made') }}</option>
+                                                        <option value="requested">{{trans('withdrawals.withdrawal_requested') }}</option>
+														<option value="awaiting_return">{{trans('withdrawals.awaiting_return') }}</option>
+														<option value="concluded">{{trans('withdrawals.concluded') }}</option>
+														<option value="error">{{trans('withdrawals.error') }}</option>
                                                     </select>
                                                 </div>
                                             </div>
@@ -259,9 +284,9 @@ export default {
                                         
 										<!--/ end-row-->
 										<div class="box-footer pull-right">
-											<button v-on:click="downloadFinancialSummary" class="btn btn-info right" type="button">
+											<button v-on:click="downloadWithdrawals" class="btn btn-info right" type="button">
 												<i class="mdi mdi-download"></i> {{trans('withdrawals.download_withdrawals')}}</button>
-											<button v-on:click="getWithdrawalsSummary" class="btn btn-success right" type="button" value="Filter_Data">
+											<button v-on:click="filterWithdrawals" class="btn btn-success right" type="button" value="Filter_Data">
 												<i class="fa fa-search"></i> {{ trans('withdrawals.search') }}</button>
 										</div>
 
@@ -273,8 +298,8 @@ export default {
                                             <hr>
                                                 <i class="fa fa-money"></i>
                                                 <strong>{{ trans('withdrawals.available_balance') }} : </strong>
-                                                <span v-if="balance.total_balance >= 0" class="text-success">{{ currency_format(balance.total_balance, currencySymbol) }}</span>
-                                                <span v-else class="text-danger">{{ currency_format(balance.total_balance, currencySymbol) }}</span>
+                                                <span v-if="current_balance >= 0" class="text-success">{{ currency_format(current_balance, currencySymbol) }}</span>
+                                                <span v-else class="text-danger">{{ currency_format(current_balance, currencySymbol) }}</span>
 									        </div>
                                         </div>
                                     </div>
@@ -287,7 +312,7 @@ export default {
 				</div>
 			</div>
 		</div>
-		<div class="col-lg-12" v-if="!isEmpty(balance.detailed_balance)">
+		<div class="col-lg-12" v-if="!isEmpty(withdrawals_report.data)">
 			<div class="card">
 				<div class="card-block">
 					</h3>
@@ -301,7 +326,7 @@ export default {
                                 <th>{{ trans("withdrawals.bank") }}</th>
                                 <th>{{ trans("withdrawals.agency") }}</th>
                                 <th>{{ trans("withdrawals.account") }}</th>
-                                <th>{{ trans("withdrawals.cpf") }}</th>
+                                <th>{{ trans("withdrawals.holder_document") }}</th>
                                 <th>{{ trans("withdrawals.status") }}</th>
                                 <th>{{ trans("withdrawals.receipt") }}</th>
 
@@ -310,17 +335,13 @@ export default {
 								<th>{{ trans("withdrawals.finance_value") }}</th>
 								<th v-if="Enviroment == 'admin'">{{ trans("withdrawals.action") }}</th>
 							</tr>
-							<tr v-for="entry in balance.withdrawals_list" v-bind:key="entry.id" total=0>
+							<tr v-for="entry in withdrawals_report.data" v-bind:key="entry.id" total=0>
 								<td>{{ entry.id }}</td>
-                                <td>{{	
-										(entry.provider_first_name || entry.user_first_name)
-										+ " " + 
-										(entry.provider_last_name  || entry.user_last_name)
-								}}</td>
-                                <td>{{ entry.provider_email || entry.user_email }}</td>
+                                <td>{{ entry.name }}</td>
+                                <td>{{ entry.email }}</td>
                                 <td>{{ entry.bank }}</td>
-                                <td>{{ entry.agency }}</td>
-                                <td>{{ entry.account }}</td>
+                                <td>{{ entry.agency + "-" + entry.agency_digit }}</td>
+                                <td>{{ entry.account + "-" + entry.account_digit }}</td>
                                 <td>{{ entry.document }}</td>
                                 <td>
 									<p v-if="entry.type == 'requested'">Solicitado</p>
@@ -331,8 +352,8 @@ export default {
 
                                 <td><a v-if="entry.bank_receipt_url" target="_blank" :href="entry.bank_receipt_url">Visualizar</a></td>
 
-                                <td><p v-if="((new Date(entry.compensation_date)).toLocaleString().split(' ')[0]) != '31/12/1969'">{{ (new Date(entry.compensation_date)).toLocaleString().split(" ")[0] }}</p></td>
-								<td>{{ (new Date(entry.compensation_date)).toTimeString().split(":")[0] }}:{{ (new Date(entry.compensation_date)).toTimeString().split(":")[1] }}</td>
+                                <td><p v-if="((new Date(entry.date)).toLocaleString().split(' ')[0]) != '31/12/1969'">{{ (new Date(entry.date)).toLocaleString().split(" ")[0] }}</p></td>
+								<td>{{ (new Date(entry.date)).toTimeString().split(":")[0] }}:{{ (new Date(entry.date)).toTimeString().split(":")[1] }}</td>
 								<td><p class="text-success">{{ currency_format(entry.value, currencySymbol) }}</p></td>
 
 								 <td v-if="Enviroment == 'admin'">
@@ -395,10 +416,9 @@ export default {
 							</div>
 						</div>
 						<!-- /.modal -->
-
 					</div>
+					<pagination :data="withdrawals_report" @pagination-change-page="filterWithdrawals"></pagination>
 				</div>
-				<pagination :data="balance.detailed_balance" @pagination-change-page="getWithdrawalsSummary"></pagination>
 			</div>
 		</div>
 	</div>

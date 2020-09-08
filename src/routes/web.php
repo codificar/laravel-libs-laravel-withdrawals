@@ -18,8 +18,9 @@ Route::group(array('namespace' => 'Codificar\Withdrawals\Http\Controllers'), fun
 
         //Relatorio de saques
         Route::group(['prefix' => '/withdrawals'], function () {
-            Route::get('/', array('as' => 'webAdminWithdrawalsReport', 'uses' => 'WithdrawalsController@getWithdrawalsReportWeb'));
+            Route::get('/', array('as' => 'webAdminWithdrawalsReport', 'uses' => 'WithdrawalsController@getWithdrawalsReportWebAdmin'));
             Route::post('/confirm_withdraw', array('as' => 'webAdminConfirmWithdraw', 'uses' => 'WithdrawalsController@confirmWithdraw'));
+            Route::get('/download', array('as' => 'webAdminDownloadWithdraw', 'uses' => 'WithdrawalsController@downloadWithdrawalsReportAdmin'));
         });
 
         //Configuracoes de saque
@@ -31,9 +32,10 @@ Route::group(array('namespace' => 'Codificar\Withdrawals\Http\Controllers'), fun
 
     // Rota para relatorio de saques do provider
     Route::group(['prefix' => '/provider/libs', 'middleware' => 'auth.provider'], function () {
-        Route::get('/withdrawals', array('as' => 'webProviderWithdrawalsReport', 'uses' => 'WithdrawalsController@getWithdrawalsReportWeb'));
+        Route::get('/withdrawals', array('as' => 'webProviderWithdrawalsReport', 'uses' => 'WithdrawalsController@getWithdrawalsReportWebProvider'));
         Route::post('/withdrawals/WithdrawAdd', array('as' => 'providerWithdrawAdd', 'uses' => 'WithdrawalsController@addWithDraw'));
         Route::post('/withdrawals/create-user-bank-account', array('as' => 'providerAddBankAccount', 'uses' => 'WithdrawalsController@createUserBankAccount'));
+        Route::get('/withdrawals/download', array('as' => 'webAProviderDownloadWithdraw', 'uses' => 'WithdrawalsController@downloadWithdrawalsReportProvider'));
     });
 
 });

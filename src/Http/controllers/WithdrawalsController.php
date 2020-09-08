@@ -358,84 +358,62 @@ class WithdrawalsController extends Controller {
 
 
 
+    public function getWithdrawalsReportWebAdmin() {
+        return $this->getWithdrawalsReportWeb("admin");
+    }
+    public function getWithdrawalsReportWebProvider() {
+        return $this->getWithdrawalsReportWeb("provider");
+    }
 
     /**
      * View the withdrawals report
      * 
      * @return View
      */
-    public function getWithdrawalsReportWeb() {
-       
-        $type = \Request::segment(1);
-        \Log::debug($type);
-        switch ($type) {
-            case Finance::TYPE_USER:
-                $id = \Auth::guard("clients")->user()->id;
-                $holder = User::find($id);
-                $notfound = 'user_panel.userLogin';
-                $enviroment = 'user';
-                break;
-            case Finance::TYPE_PROVIDER:
-                $id = \Auth::guard("providers")->user()->id;
-                $holder = Provider::find($id);
-                $notfound = 'provider_panel.login';
-                $enviroment = 'provider';
-                break;
-            case Finance::TYPE_CORP:
-                $admin_id = \Auth::guard("web")->user()->id;
-                $holder = AdminInstitution::getUserByAdminId($admin_id);
-                $id = $holder->id;
-                $notfound = 'corp.login';
-                $enviroment = 'corp';
-                break;
-            case Finance::TYPE_ADMIN:
-                $admin_id = \Auth::guard("web")->user()->id;
-                $holder = null;
-                $id = null;
-                $notfound = 'corp.login';
-                $enviroment = 'admin';
-                break;
-        }
-        if (($holder && $holder->ledger) || $type == Finance::TYPE_ADMIN) {
-            
-            if(isset($holder->ledger->id) && $holder->ledger->id) {
-                $ledger_id = $holder->ledger->id;
-            } else {
-                $ledger_id = null;
-            }
-            $balance = Withdrawals::getWithdrawalsSummaryWeb($ledger_id, $enviroment);
-            if (Input::get('submit') && Input::get('submit') == 'Download_Report') {
-                return $this->downloadFinancialReport($type, $holder, $balance);
-            } else {
-                $types = Finance::TYPES; //Prepares Finance types array to be used on vue component
-                $banks = Bank::orderBy('code', 'asc')->get(); //List of banks
-                $account_types = LedgerBankAccount::getAccountTypes(); //List of AccountTypes
+    private function getWithdrawalsReportWeb($enviroment) {
 
-                $withDrawSettings = array(
-                    'with_draw_enabled' => Settings::getWithDrawEnabled(),
-                    'with_draw_max_limit' => Settings::getWithDrawMaxLimit(),
-                    'with_draw_min_limit' => Settings::getWithDrawMinLimit(),
-                    'with_draw_tax' => Settings::getWithDrawTax()
-                );
-
-                return View::make('withdrawals::withdrawals_report')
-                                ->with([
-                                    'id' => $id,
-                                    'enviroment' => $enviroment,
-                                    'user_provider_type'  => $enviroment,
-                                    'holder' => isset($holder->first_name) ? $holder->first_name . ' ' . $holder->last_name : '',
-                                    'ledger' => $holder,
-                                    'balance' => $balance,
-                                    'types' => $types,
-                                    'bankaccounts' => isset($holder->ledger->bankAccounts) ? $holder->ledger->bankAccounts : '',
-                                    'banks' => $banks,
-                                    'account_types' => $account_types,
-                                    'withdrawsettings' => $withDrawSettings
-                ]);
-            }
-        } else { //if($holder && $holder->ledger)
-            return View::make($notfound)->with('title', trans('adminController.page_not_found'))->with('page', trans('adminController.page_not_found'));
+        $ledgerId = null;
+        if($enviroment == "provider") {
+            $id = \Auth::guard("providers")->user()->id;
+            $provider = Provider::find($id);
+            $ledgerId = $provider->ledger->id;
         }
+
+        //Get the filters
+		$status = Input::get('status');
+		$receipt = Input::get('receipt');
+
+        //Get the withdrawals report
+        $withdrawals_report = Withdrawals::getWithdrawals(true, $enviroment, $ledgerId, $status, $receipt);
+
+        $types = Finance::TYPES; //Prepares Finance types array to be used on vue component
+        $banks = Bank::orderBy('code', 'asc')->get(); //List of banks
+        $account_types = LedgerBankAccount::getAccountTypes(); //List of AccountTypes
+        
+        $currentBalance = Finance::sumValueByLedgerId($ledgerId);
+
+        $withDrawSettings = array(
+            'with_draw_enabled' => Settings::getWithDrawEnabled(),
+            'with_draw_max_limit' => Settings::getWithDrawMaxLimit(),
+            'with_draw_min_limit' => Settings::getWithDrawMinLimit(),
+            'with_draw_tax' => Settings::getWithDrawTax()
+        );
+        return View::make('withdrawals::withdrawals_report')
+                        ->with([
+                            'id' => $enviroment == "provider" ? $id : null,
+                            'enviroment' => $enviroment,
+                            'user_provider_type'  => $enviroment,
+                            'holder' => '',
+                            'ledger' => isset($provider) ? $provider : "",
+                            'withdrawals_report' => json_encode($withdrawals_report),
+                            'current_balance' => $currentBalance,
+                            'types' => $types,
+                            'bankaccounts' => isset($provider->ledger->bankAccounts) ? $provider->ledger->bankAccounts : '',
+                            'banks' => $banks,
+                            'account_types' => $account_types,
+                            'withdrawsettings' => $withDrawSettings
+        ]);
+        
     }
 
     public function confirmWithdraw(ConfirmWithdrawFormRequest $request) {
@@ -617,6 +595,109 @@ class WithdrawalsController extends Controller {
         $responseCode = 200;
 		$response = Response::json($responseArray, $responseCode);
 		return $response;
-	}
+    }
+
+
+    public function downloadWithdrawalsReportAdmin() {
+        //Get the filters
+		$status = Input::get('status');
+		$receipt = Input::get('receipt');
+
+        //Get the withdrawals report
+        $withdrawals = Withdrawals::getWithdrawals(false, "admin", null, $status, $receipt);
+        return $this->downloadWithdrawalsReportCSV($withdrawals);	
+    }
+
+    public function downloadWithdrawalsReportProvider() {
+        //Get the filters
+		$status = Input::get('status');
+        $receipt = Input::get('receipt');
+        
+        $id = \Auth::guard("providers")->user()->id;
+        $provider = Provider::find($id);
+        $ledgerId = $provider->ledger->id;
+
+        //Get the withdrawals report
+        $withdrawals = Withdrawals::getWithdrawals(false, "provider", $ledgerId, $status, $receipt);
+        return $this->downloadWithdrawalsReportCSV($withdrawals);	
+    }
+    
+
+    /**
+	 * Download csv of withdrawals report
+	 *
+	 * @return void
+	 */	
+	private function downloadWithdrawalsReportCSV($withdrawals){
+
+		// Setting the output filename 
+		$filename = "relatorio-saques-".date("Y-m-d-hms", time()).".csv";
+		$handle = fopen(storage_path('tmp/').$filename, 'w+');
+		fputs( $handle, $bom = chr(0xEF) . chr(0xBB) . chr(0xBF) );
+		// Setting the csv header
+		fputcsv($handle,
+			array(
+                trans("libTans::withdrawals.id"),
+                trans("libTans::withdrawals.name"),
+                trans("libTans::withdrawals.bank"),
+                trans("libTans::withdrawals.agency"),
+                trans("libTans::withdrawals.agency_digit"),
+                trans("libTans::withdrawals.account"),
+                trans("libTans::withdrawals.account_digit"),
+                trans("libTans::withdrawals.holder_document"),
+                trans("libTans::withdrawals.status"),
+                trans("libTans::withdrawals.finance_date"),
+                trans("libTans::withdrawals.finance_value")
+			),
+			";"
+		);
+		
+		foreach ($withdrawals as $key => $withdraw) {
+
+			// Formats the csv file
+			fputcsv($handle,
+				array(
+                    $withdraw->id,
+                    $withdraw->name,
+                    $withdraw->bank,
+                    $withdraw->agency,
+                    $withdraw->agency_digit,
+                    $withdraw->account,
+                    $withdraw->account_digit,
+                    $withdraw->document,
+                    $this->getWithdrawStatus($withdraw->type),
+                    $withdraw->date,
+                    currency_format($withdraw->value),
+				),
+				";"
+			);
+		}
+		// Close the pointer file
+		fclose($handle);
+		$headers = array(
+			'Content-Type' => 'text/csv; charset=utf-8',
+			'Content-Disposition' => 'attachment; filename='. $filename,
+		);
+		return Response::download(storage_path('tmp/').$filename, $filename, $headers);		
+    }
+    
+    private function getWithdrawStatus($status) {
+        switch ($status) {
+            case "requested":
+                $value = trans("libTans::withdrawals.withdrawal_requested");
+                break;
+            case "awaiting_return":
+                $value = trans("libTans::withdrawals.awaiting_return");
+                break;
+            case "concluded":
+                $value = trans("libTans::withdrawals.concluded");
+                break;
+            case "error":
+                $value = trans("libTans::withdrawals.error");
+                break;
+        }
+        return $value;
+    } 
+
 
 }

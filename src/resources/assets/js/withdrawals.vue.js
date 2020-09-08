@@ -17,6 +17,9 @@ import WithdrawalsSettings from './pages/withdrawals_settings.vue';
 // Withdrawls report
 import withdrawalsreport from './pages/withdrawals_report.vue';
 
+
+import pagination from 'laravel-vue-pagination';
+
 import VueSweetalert2 from 'vue-sweetalert2';
 Vue.use(VueSweetalert2);
 
@@ -24,6 +27,8 @@ Vue.use(VueResource);
 
 Vue.use(VueTheMask)
 
+Vue.component('pagination', pagination);
+Vue.component('paginator-counter', require('./pages/Counter.vue'));
 
 
 //Works like php number_format

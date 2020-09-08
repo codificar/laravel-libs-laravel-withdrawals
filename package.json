@@ -26,6 +26,7 @@
     "axios": "^0.18.0",
     "laravel-echo": "^1.5.3",
     "laravel-echo-server": "^1.5.5",
+    "laravel-vue-pagination": "^2.0.1",
     "lodash": "^4.17.10",
     "lodash.clonedeep": "^4.5.0",
     "lodash.omit": "^4.5.0",

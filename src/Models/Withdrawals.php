@@ -300,4 +300,74 @@ class Withdrawals extends Eloquent
 
         return $query;
     }
+
+
+    /**
+     * get withdrawals report with filter or not
+     *
+     * @param Boolean       $hasPaginate        true or false. If has paginate or not
+     * @param String        $enviroment         enviroment can be "admin" or "provider"
+     * @param String        $status_filter      status_filter is a string, need be equal the type column on withdraw table
+     * @param Number        $receipt_filter     receipt_filter is a number, if is 2 so get the withdraw with receipt. If 1, get withdraw withou receipt. If other value, get all withdraw
+     *
+     * @return Array        $withdrawals_report     
+     */
+    public static function getWithdrawals($hasPaginate, $enviroment, $ledgerId = null, $status_filter = null, $receipt_filter = null)
+    {
+        $query = DB::table('withdraw')
+            ->select(
+                'withdraw.id as id',
+                'withdraw.type as type',
+                'withdraw.created_at as date',
+                'withdraw.bank_receipt_url as bank_receipt_url',
+                'finance.value as value',
+                'ledger_bank_account.document as document',
+                'ledger_bank_account.account as account',
+                'ledger_bank_account.account_digit as account_digit',
+                'ledger_bank_account.holder as name',
+                'ledger_bank_account.agency as agency',
+                'ledger_bank_account.agency_digit as agency_digit',
+                'ledger_bank_account.account as account',
+                'ledger_bank_account.account_digit as account_digit',
+                'bank.name as bank',
+                'provider.email as email'
+            )
+            ->join('finance', 'finance.id', '=', 'withdraw.finance_withdraw_id')
+            ->join('ledger_bank_account', 'finance.ledger_bank_account_id', 'ledger_bank_account.id')
+            ->join('ledger', 'finance.ledger_id', '=', 'ledger.id')
+            ->join('bank', 'ledger_bank_account.bank_id', 'bank.id')
+            ->join('provider', 'ledger.provider_id', '=', 'provider.id')
+            ->where('finance.reason', '=', 'WITHDRAW')
+            
+            //if is provider, so just get the withdraw that provider
+            ->when($enviroment == "provider", function ($query, $model) use ($ledgerId) {
+                $query->where('finance.ledger_id', '=', $ledgerId);
+            })
+            
+            //If has status 
+            ->when($status_filter, function ($query, $model) use ($status_filter) {
+                $query->where('withdraw.type', '=', $status_filter);
+            })
+
+            //If has receipt filter
+            ->when($receipt_filter == 1 || $receipt_filter == 2, function ($query, $model) use ($receipt_filter) {
+                if($receipt_filter == 2) {
+                    $query->where('withdraw.bank_receipt_url', '!=', null);
+                } else if ($receipt_filter == 1) {
+                    $query->where('withdraw.bank_receipt_url', '=', null);
+                }
+            })
+            ->orderBy('withdraw.id', 'DESC');
+            
+        if($hasPaginate) {
+            $query = $query->paginate(10);
+        } else {
+            $query = $query->get();
+        }
+        //Converte o valor negativo para positivo
+        foreach($query as $withdraw) {
+            $withdraw->value = -1 * $withdraw->value;
+        }
+        return $query;
+    }
 }
