@@ -39,7 +39,7 @@ class WithdrawalsController extends Controller {
         $providerId = Input::get('provider_id') ? Input::get('provider_id') : Input::get('id');
         $provider = Provider::find($providerId);
         
-        $withdrawalsSummary = Withdrawals::getWithdrawals(false, "provider", $provider->ledger->id);
+        $withdrawals_report = Withdrawals::getWithdrawals(false, "provider", $provider->ledger->id);
         // Return data
 		return new ProviderWithdrawalsReportResource([
             'withdrawals_report' => $withdrawals_report
