@@ -71,13 +71,7 @@ export default {
 
   },
   created() {
-	var aux;
-	var settingsJson = {};
-	this.Settings ? (aux = JSON.parse(this.Settings)) : null;
-	aux.forEach(function myFunction(item, index) {
-		settingsJson[item.key] = item.value
-	});
-	this.settings = settingsJson;
+	this.settings = (JSON.parse(this.Settings));
   }
 };
 </script>

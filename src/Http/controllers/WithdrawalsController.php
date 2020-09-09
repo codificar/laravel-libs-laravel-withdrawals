@@ -39,8 +39,7 @@ class WithdrawalsController extends Controller {
         $providerId = Input::get('provider_id') ? Input::get('provider_id') : Input::get('id');
         $provider = Provider::find($providerId);
         
-        $withdrawals_report = Withdrawals::getWithdrawalsSummary($provider->ledger->id, 'provider');
-        
+        $withdrawalsSummary = Withdrawals::getWithdrawals(false, "provider", $provider->ledger->id);
         // Return data
 		return new ProviderWithdrawalsReportResource([
             'withdrawals_report' => $withdrawals_report
@@ -61,12 +60,7 @@ class WithdrawalsController extends Controller {
         $currentBalance = Finance::sumValueByLedgerId($ledger->id);
 
         // Get the settings of withdraw
-        $withDrawSettings = array(
-            'with_draw_enabled' => Settings::getWithDrawEnabled(),
-            'with_draw_max_limit' => Settings::getWithDrawMaxLimit(),
-            'with_draw_min_limit' => Settings::getWithDrawMinLimit(),
-            'with_draw_tax' => Settings::getWithDrawTax()
-        );
+        $withDrawSettings = Withdrawals::getWithdrawalsSettings(false);
         
 
         // Return data
@@ -87,12 +81,7 @@ class WithdrawalsController extends Controller {
         $providerId = Input::get('provider_id') ? Input::get('provider_id') : Input::get('id');
         $provider = Provider::find($providerId);
 
-        $withDrawSettings = array(
-            'with_draw_enabled' => Settings::getWithDrawEnabled(),
-            'with_draw_max_limit' => currency_format(Settings::getWithDrawMaxLimit()),
-            'with_draw_min_limit' => currency_format(Settings::getWithDrawMinLimit()),
-            'with_draw_tax' => currency_format(Settings::getWithDrawTax())
-        );
+        $withDrawSettings = Withdrawals::getWithdrawalsSettings(true);
 
         // Get the current balance from ledger. 
         $currentBalance = currency_format(Finance::sumValueByLedgerId($provider->ledger->id));
@@ -140,7 +129,7 @@ class WithdrawalsController extends Controller {
      */
     public function getWithdrawalsSettingsWeb() {
 
-        $settings = Withdrawals::getWithdrawalsSettings();
+        $settings = Withdrawals::getWithdrawalsSettings(false);
 
         return View::make('withdrawals::withdrawals_settings')
             ->with([
@@ -240,7 +229,7 @@ class WithdrawalsController extends Controller {
                     'codigo_camera'     => $settings['rem_transfer_type'] == "doc" ? '700' : '018', // 018 TED - 700 DOC/OP - 000 Credito em Conta - 888 Boleted/ISPB 
                     'cod_banco_fav'     => $data->bank_code,
                     'agen_cta_favor'    => $data->agency,
-                    'dig_ver_agen'      => $data->agency_digit,
+                    'dig_ver_agen'      => (isset($data->agency_digit) && strval($data->agency_digit)) ? strval($data->agency_digit) : '0',
                     'conta_corrente_fav'=> $data->account,
                     'dig_conta_fav'     => $data->account_digit,
                     'nome_fav'          => $data->favoredName,
@@ -392,12 +381,8 @@ class WithdrawalsController extends Controller {
         
         $currentBalance = Finance::sumValueByLedgerId($ledgerId);
 
-        $withDrawSettings = array(
-            'with_draw_enabled' => Settings::getWithDrawEnabled(),
-            'with_draw_max_limit' => Settings::getWithDrawMaxLimit(),
-            'with_draw_min_limit' => Settings::getWithDrawMinLimit(),
-            'with_draw_tax' => Settings::getWithDrawTax()
-        );
+        $withDrawSettings = Withdrawals::getWithdrawalsSettings(false);
+
         return View::make('withdrawals::withdrawals_report')
                         ->with([
                             'id' => $enviroment == "provider" ? $id : null,
