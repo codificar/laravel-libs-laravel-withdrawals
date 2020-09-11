@@ -74,7 +74,13 @@ class Withdrawals extends Eloquent
             "rem_account_dv",
             "rem_bank_code",
             "rem_agreement_number",
-            "rem_transfer_type"
+            "rem_transfer_type",
+            "rem_environment",
+            "rem_address",
+            "rem_address_number",
+            "rem_city",
+            "rem_cep",
+            "rem_state"
         );
 
         $query = DB::table('settings')
@@ -151,7 +157,7 @@ class Withdrawals extends Eloquent
     }
 
 
-    public static function getUserProviderDataToCreateCnab()
+    public static function getProviderDataToCreateCnab()
     {
         $query = DB::table('withdraw')
             ->select(
@@ -166,13 +172,21 @@ class Withdrawals extends Eloquent
                 'ledger_bank_account.agency_digit as agency_digit',
                 'ledger_bank_account.document as document',
                 'ledger_bank_account.person_type as person_type',
-                'ledger_bank_account.holder as favoredName'
+                'ledger_bank_account.holder as favoredName',
+                'ledger_bank_account.account_type as account_type',
+                'provider.address as address',
+                'provider.address_number as address_number',
+                'provider.address_neighbour as address_neighbour',
+                'provider.address_city as address_city',
+                'provider.zipcode as zipcode',
+                'provider.state as state'
             )
             ->where('withdraw.type', '=', 'requested')
             ->join('finance', 'finance.id', '=', 'withdraw.finance_withdraw_id')
             ->join('ledger', 'finance.ledger_id', '=', 'ledger.id')
             ->join('ledger_bank_account', 'finance.ledger_bank_account_id', 'ledger_bank_account.id')
             ->join('bank', 'ledger_bank_account.bank_id', 'bank.id')
+            ->join('provider', 'ledger.provider_id', 'provider.id')
             ->get();
 
         foreach($query as $totalValue) {

@@ -45,6 +45,13 @@ class saveCnabSettingsResource extends JsonResource {
         DB::table('settings')->where('key', 'rem_bank_code')->update(array('value' => $this['rem_bank_code']));
         DB::table('settings')->where('key', 'rem_agreement_number')->update(array('value' => $this['rem_agreement_number']));
         DB::table('settings')->where('key', 'rem_transfer_type')->update(array('value' => $this['rem_transfer_type']));
+
+        DB::table('settings')->where('key', 'rem_environment')->update(array('value' => $this['rem_environment']));
+        DB::table('settings')->where('key', 'rem_address')->update(array('value' => $this['rem_address']));
+        DB::table('settings')->where('key', 'rem_address_number')->update(array('value' => $this['rem_address_number']));
+        DB::table('settings')->where('key', 'rem_city')->update(array('value' => $this['rem_city']));
+        DB::table('settings')->where('key', 'rem_cep')->update(array('value' => $this['rem_cep']));
+        DB::table('settings')->where('key', 'rem_state')->update(array('value' => $this['rem_state']));
         return [
             'success' => true,
             'message' => $this['message']

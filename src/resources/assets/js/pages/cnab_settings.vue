@@ -207,7 +207,7 @@ export default {
 				
 				<div class="row">
 					<!-- Banco -->
-					<div class="col-md-6 col-sm-12">
+					<div class="col-md-4 col-sm-12">
 						<div class="form-group">
 							<label class="control-label">{{trans('withdrawals.rem_bank') }}</label>
 							<select
@@ -234,7 +234,7 @@ export default {
 					</div>
 
 					<!-- Codigo do convenio do banco -->
-					<div class="col-md-6 col-sm-12">
+					<div class="col-md-4 col-sm-12">
 						<div class="form-group">
 							<label class="control-label">{{trans('withdrawals.rem_agreement_number') }}</label>
 							<input
@@ -246,6 +246,33 @@ export default {
 								v-mask="['######']"
 								v-model="settings.rem_agreement_number"
 							/>
+						</div>
+					</div>
+
+					<!-- Ambiente (teste ou producao T OU P) -->
+					<div class="col-md-4 col-sm-12">
+						<div class="form-group">
+							<label class="control-label">{{trans('withdrawals.rem_environment') }}</label>
+							<select
+								v-model="settings.rem_environment"
+								name="rem_environment"
+								class="select form-control"
+							>
+							<option
+								v-for="method in [
+									{
+										'value': 'T', 
+										'name': 'Teste'
+									},
+									{
+										'value': 'P', 
+										'name': 'Produção'
+									}
+								]"
+								v-bind:value="method.value"
+								v-bind:key="method.value"
+							>{{ method.name }}</option>
+							</select>
 						</div>
 					</div>
 				</div>
@@ -268,7 +295,7 @@ export default {
 					</div>
 
 					<!-- TED ou DOC -->
-					<div class="col-md-6 col-sm-12">
+					<div class="col-md-3 col-sm-12">
 						<div class="form-group">
 							<label class="control-label">{{trans('withdrawals.rem_transfer_type') }}</label>
 							<select
@@ -293,11 +320,10 @@ export default {
 							</select>
 						</div>
 					</div>
-				</div>
 
-				<div class="row">
+
 					<!-- TIPO: CPF ou CNPJ -->
-					 <div class="col-md-6 col-sm-12">
+					 <div class="col-md-3 col-sm-12">
 						<div class="form-group">
 							<label class="control-label">{{trans('withdrawals.rem_cpf_or_cnpj') }}</label>
 							<select
@@ -322,9 +348,12 @@ export default {
 							</select>
 						</div>
 					</div>
+				</div>
 
+				<div class="row">
+					
 					<!-- Valor do CPF ou CNPJ -->
-					<div class="col-md-6 col-sm-12">
+					<div class="col-md-4 col-sm-12">
 						<div class="form-group">
 							<label class="control-label">{{trans('withdrawals.rem_document') }}</label>
 							<the-mask
@@ -338,11 +367,9 @@ export default {
 							/>
 						</div>
 					</div>
-				</div>
 
-				<div class="row">
 					<!-- Agencia -->
-					<div class="col-md-6 col-sm-12">
+					<div class="col-md-4 col-sm-12">
 						<div class="form-group">
 							<label class="control-label">{{trans('withdrawals.rem_agency') }}</label>
 							<input
@@ -358,7 +385,7 @@ export default {
 					</div>
 
 					<!-- Digito da agencia -->
-					<div class="col-md-6 col-sm-12">
+					<div class="col-md-4 col-sm-12">
 						<div class="form-group">
 							<label class="control-label">{{trans('withdrawals.rem_agency_dv') }}</label>
 							<input
@@ -374,10 +401,9 @@ export default {
 					</div>
 				</div>
 
-
 				<div class="row">
 					<!-- Conta -->
-					<div class="col-md-6 col-sm-12">
+					<div class="col-md-4 col-sm-12">
 						<div class="form-group">
 							<label class="control-label">{{trans('withdrawals.rem_account') }}</label>
 							<input
@@ -393,7 +419,7 @@ export default {
 					</div>
 
 					<!-- Digito da conta -->
-					<div class="col-md-6 col-sm-12">
+					<div class="col-md-2 col-sm-12">
 						<div class="form-group">
 							<label class="control-label">{{trans('withdrawals.rem_account_dv') }}</label>
 							<input
@@ -407,6 +433,90 @@ export default {
 							/>
 						</div>
 					</div>
+
+					<!-- Endereco (max 30) -->
+					<div class="col-md-6 col-sm-12">
+						<div class="form-group">
+							<label class="control-label">{{trans('withdrawals.rem_address') }}</label>
+							<input
+							type="text"
+							class="form-control"
+							name="rem_address"
+							id="rem_address"
+							maxlength="30"
+							required
+							v-model="settings.rem_address"
+							/>
+						</div>
+					</div>
+				</div>
+
+
+				<div class="row">
+					<!-- numero do endereco  -->
+					<div class="col-md-2 col-sm-12">
+						<div class="form-group">
+							<label class="control-label">{{trans('withdrawals.rem_address_number') }}</label>
+							<input
+							type="text"
+							class="form-control"
+							name="rem_address_number"
+							id="rem_address_number"
+							v-mask="['#####']"
+							required
+							v-model="settings.rem_address_number"
+							/>
+						</div>
+					</div>
+
+					<!-- Cidade -->
+					<div class="col-md-4 col-sm-12">
+						<div class="form-group">
+							<label class="control-label">{{trans('withdrawals.rem_city') }}</label>
+							<input
+							type="text"
+							class="form-control"
+							name="rem_city"
+							id="rem_city"
+							maxlength="20"
+							required
+							v-model="settings.rem_city"
+							/>
+						</div>
+					</div>
+				
+					<!-- Cep -->
+					<div class="col-md-4 col-sm-12">
+						<div class="form-group">
+							<label class="control-label">{{trans('withdrawals.rem_cep') }}</label>
+							<the-mask
+							type="text"
+							class="form-control"
+							name="rem_cep"
+							id="rem_cep"
+							:mask="['#####-###']"
+							required
+							v-model="settings.rem_cep"
+							/>
+						</div>
+					</div>
+
+					<!-- sigla estado -->
+					<div class="col-md-2 col-sm-12">
+						<div class="form-group">
+							<label class="control-label">{{trans('withdrawals.rem_state') }}</label>
+							<input
+							type="text"
+							class="form-control"
+							name="rem_state"
+							id="rem_state"
+							maxlength="2"
+							required
+							v-model="settings.rem_state"
+							/>
+						</div>
+					</div>
+
 				</div>
 
 				<button type="submmit" class="btn btn-success pull-right">{{trans('withdrawals.save')}}</button>
