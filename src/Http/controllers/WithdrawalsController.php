@@ -172,7 +172,8 @@ class WithdrawalsController extends Controller {
             "rem_address_number"    => $request->settings['rem_address_number'],
             "rem_city"              => $request->settings['rem_city'],
             "rem_cep"               => $request->settings['rem_cep'],
-            "rem_state"             => $request->settings['rem_state']
+            "rem_state"             => $request->settings['rem_state'],
+            "rem_operation"         => $request->settings['rem_operation']
 		]);
     }
 
@@ -273,6 +274,7 @@ class WithdrawalsController extends Controller {
                         'amb_cliente'           => $settings['rem_environment'], // T teste e P producao
                         'agencia'               => substr($settings['rem_agency'],0,5), // sua agencia (pagador), sem o digito verificador 
                         'agencia_dv'            => substr($settings['rem_agency_dv'], 0,1), // somente o digito verificador da agencia 
+                        'operacao_conta'        => substr($settings['rem_operation'],0,4), // digito da conta
                         'conta'                 => substr($settings['rem_account'],0,12), // numero da sua conta
                         'conta_dv'              => substr($settings['rem_account_dv'],0,1), // digito da conta
                         'nome_empresa'          => mb_substr($settings['rem_company_name'],0,30), // seu nome de empresa max 30

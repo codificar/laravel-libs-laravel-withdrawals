@@ -23,6 +23,7 @@ return array(
 	'rem_city'						=> 'Cidade (max 20)',
 	'rem_cep'						=> 'CEP',
 	'rem_state'						=> 'Estado (sigla)',
+	'rem_operation'					=> 'Operação (se houver)',
 
 	'save'							=> 'Salvar',
 	'save_question'					=> 'Tem certeza que deseja salvar?',

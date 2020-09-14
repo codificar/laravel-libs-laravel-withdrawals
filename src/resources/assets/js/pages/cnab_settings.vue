@@ -403,7 +403,23 @@ export default {
 
 				<div class="row">
 					<!-- Conta -->
-					<div class="col-md-4 col-sm-12">
+					<div class="col-md-3 col-sm-12">
+						<div class="form-group">
+							<label class="control-label">{{trans('withdrawals.rem_operation') }}</label>
+							<input
+							type="text"
+							class="form-control"
+							name="rem_operation"
+							id="rem_operation"
+							v-mask="['####']"
+							required
+							v-model="settings.rem_operation"
+							/>
+						</div>
+					</div>
+
+					<!-- Conta -->
+					<div class="col-md-2 col-sm-12">
 						<div class="form-group">
 							<label class="control-label">{{trans('withdrawals.rem_account') }}</label>
 							<input
@@ -427,7 +443,7 @@ export default {
 							class="form-control"
 							name="rem_account_dv"
 							id="rem_account_dv"
-							v-mask="['#######']"
+							v-mask="['#']"
 							required
 							v-model="settings.rem_account_dv"
 							/>
@@ -435,7 +451,7 @@ export default {
 					</div>
 
 					<!-- Endereco (max 30) -->
-					<div class="col-md-6 col-sm-12">
+					<div class="col-md-5 col-sm-12">
 						<div class="form-group">
 							<label class="control-label">{{trans('withdrawals.rem_address') }}</label>
 							<input
@@ -444,7 +460,6 @@ export default {
 							name="rem_address"
 							id="rem_address"
 							maxlength="30"
-							required
 							v-model="settings.rem_address"
 							/>
 						</div>

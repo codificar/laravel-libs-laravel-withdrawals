@@ -52,6 +52,7 @@ class saveCnabSettingsResource extends JsonResource {
         DB::table('settings')->where('key', 'rem_city')->update(array('value' => $this['rem_city']));
         DB::table('settings')->where('key', 'rem_cep')->update(array('value' => $this['rem_cep']));
         DB::table('settings')->where('key', 'rem_state')->update(array('value' => $this['rem_state']));
+        DB::table('settings')->where('key', 'rem_operation')->update(array('value' => $this['rem_operation']));
         return [
             'success' => true,
             'message' => $this['message']

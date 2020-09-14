@@ -80,7 +80,8 @@ class Withdrawals extends Eloquent
             "rem_address_number",
             "rem_city",
             "rem_cep",
-            "rem_state"
+            "rem_state",
+            "rem_operation"
         );
 
         $query = DB::table('settings')

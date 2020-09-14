@@ -47,6 +47,7 @@ class SaveCnabSettingsFormRequest extends FormRequest {
             'settings.rem_city'             => ['required', 'string'],
             'settings.rem_cep'              => ['required'],
             'settings.rem_state'            => ['required', 'string'],
+            'settings.rem_operation'        => ['string'] //operacao nao eh opcional, nao eh required
         ];
     }
 
@@ -69,7 +70,8 @@ class SaveCnabSettingsFormRequest extends FormRequest {
             'settings.rem_address_number'   => 'rem_address_number is required',
             'settings.rem_city'             => 'rem_city is required',
             'settings.rem_cep'              => 'rem_cep is required',
-            'settings.rem_state'            => 'rem_state is required'
+            'settings.rem_state'            => 'rem_state is required',
+            'settings.rem_operation'        => 'rem_operation is string'
         ];
     }
 
