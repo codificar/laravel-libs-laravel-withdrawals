@@ -41,7 +41,8 @@ export default {
 			page: this.getUrlParams("page"),
 			confirm_withdraw_date: '',
 			fileWithdraw: '',
-			current_modal_id: null
+			current_modal_id: null,
+			error_msg: ""
 		};
 	},
 	components: {
@@ -158,6 +159,13 @@ export default {
 
 			//open modal
 			$("#modalConfirmWithdraw").modal("show");
+		},
+
+		showModalErrorMsg(msg) {
+
+			this.error_msg = msg;
+			//open modal
+			$("#modalErrorMsg").modal("show");
 		},
 
 
@@ -347,7 +355,13 @@ export default {
 									<p v-if="entry.type == 'requested'">Solicitado</p>
 									<p v-if="entry.type == 'awaiting_return'">Aguardando arq. retorno</p>
 									<p v-if="entry.type == 'concluded'">Concluído</p>
-									<p v-if="entry.type == 'error'">Erro</p>
+									<a 
+										v-if="entry.type == 'error'"
+										style="cursor: pointer; color: red" 
+										v-on:click="showModalErrorMsg(entry.error_msg)"
+									>
+										Ver erro
+									</a>
 								</td>
 
                                 <td><a v-if="entry.bank_receipt_url" target="_blank" :href="entry.bank_receipt_url">Visualizar</a></td>
@@ -409,6 +423,28 @@ export default {
 
 											<button type="button" v-on:click="confirmWithdraw(this.current_modal_id)" class="btn btn-success right">Enviar</button>
 											
+										</form>
+									</div>
+									
+								</div>
+							</div>
+						</div>
+						<!-- /.modal -->
+
+
+
+						 <!-- modal error msg -->
+						<div class="modal" :id="'modalErrorMsg'" tabindex="-1" role="dialog" aria-labelledby="modalmodalErrorMsgLabel">
+							<div class="modal-dialog" role="document">
+								<div class="modal-content">
+									<div class="modal-header">
+										<h4 class="modal-title">Motivo do Erro ao realizar saque</h4>
+										<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+									</div>
+									<div class="modal-body">
+										<form id="modalFormErrorMsg">
+											<label>{{this.error_msg}}</label>
+											<br>
 										</form>
 									</div>
 									

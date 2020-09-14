@@ -248,6 +248,7 @@ class Withdrawals extends Eloquent
                 'withdraw.type as type',
                 'withdraw.created_at as date',
                 'withdraw.bank_receipt_url as bank_receipt_url',
+                'withdraw.error_msg as error_msg',
                 'finance.value as value',
                 'finance.value as formattedValue',
                 'ledger_bank_account.document as document',
