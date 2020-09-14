@@ -402,7 +402,7 @@ export default {
 				</div>
 
 				<div class="row">
-					<!-- Conta -->
+					<!-- operacao -->
 					<div class="col-md-3 col-sm-12">
 						<div class="form-group">
 							<label class="control-label">{{trans('withdrawals.rem_operation') }}</label>
