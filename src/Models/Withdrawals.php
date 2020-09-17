@@ -61,6 +61,17 @@ class Withdrawals extends Eloquent
                 ]
             );
     }
+    public static function updateCnabWithdrawStatus($withdrawId, $status, $error_msg = null) {
+        DB::table('withdraw')
+            ->where('id', '=', $withdrawId)
+            ->where('type', '=', 'awaiting_return')
+            ->update(
+                [
+                    'type' => $status,
+                    'error_msg' => $error_msg
+                ]
+            );
+    }
 
     public static function getCnabSettings() {
 
@@ -183,6 +194,7 @@ class Withdrawals extends Eloquent
                 'provider.state as state'
             )
             ->where('withdraw.type', '=', 'requested')
+            ->orderBy('withdraw.id', 'ASC')
             ->join('finance', 'finance.id', '=', 'withdraw.finance_withdraw_id')
             ->join('ledger', 'finance.ledger_id', '=', 'ledger.id')
             ->join('ledger_bank_account', 'finance.ledger_bank_account_id', 'ledger_bank_account.id')

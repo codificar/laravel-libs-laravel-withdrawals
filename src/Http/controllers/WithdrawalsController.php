@@ -28,6 +28,7 @@ use Codificar\Withdrawals\Http\Resources\saveWithdrawalsSettingsResource;
 
 //Gerar arquivo de remessa CNAB
 use \CnabPHP\Remessa;
+use \CnabPHP\Retorno;
 
 use Input, Validator, View, Response;
 use Provider, Settings, Ledger, Finance, Bank, LedgerBankAccount;
@@ -334,9 +335,8 @@ class WithdrawalsController extends Controller {
                     $cnabFile = utf8_decode($arquivo->getText());
                         
                     // get nome
-                    $file_name = time();
-                    $file_name .= rand();
-                    $file_name = sha1($file_name);
+                    $file_name = "remessa_id" . $modelCnabFile->id . "_" . date("Y_m_d");
+                    $file_name .= "_" . rand();
 
                     //Upload
                     $teste = file_put_contents(public_path() . "/uploads/" . $file_name . ".txt", $cnabFile);
@@ -393,19 +393,94 @@ class WithdrawalsController extends Controller {
 
         //get the ret file
         $retFile = $request->cnab_ret_file;
-       
-       // #TODO
-       //FAZER A LOGICA DO ARQUIVO DE RETORNO AQUI.
+        $extension = pathinfo($retFile->getClientOriginalName(), PATHINFO_EXTENSION);
+
+        //Verifica se o arquivo eh do formato correto (txt ou ret)
+        if($extension != "txt" && $extension != "TXT" && $extension != "ret" && $extension != "RET") {
+		    return Response::json(array('success' => false, 'errors' => 'Arquivo precisa ser .txt ou .ret'), 200);
+        }
+        try {
+            $fileContent = file_get_contents($retFile); // ler o conteudo do arquivo
+            $arquivo = new Retorno($fileContent);
+            
+            $headerArquivo = $arquivo->getRegistrosRaiz()[0]; //Pega o header do arquivo
+            $headerLote = $arquivo->getChild(); // pega o header do lote
+
+            //Verifica se o id do arquivo de remessa nao bate com esse retorno (campo reservado_empresa)
+            if(intval($headerArquivo->reservado_empresa) != intval($cnab_id)) {
+                return Response::json(
+                    array(
+                        'success' => false, 
+                        'errors' => 'O arquivo de retorno enviado nao pertence a esse arquivo de remessa.'
+                    ), 
+                    200
+                );
+            }
+
+            //Verifica se o arquivo nao foi processado (codigo 00 ou string vazia quer dizer que foi processado)
+            else if($headerLote->ocorrencias != "00" && $headerLote->ocorrencias != "") {
+                return Response::json(
+                    array(
+                        'success' => false, 
+                        'errors' => 'O banco recusou o arquivo pelo seguinte motivo: ' . $this->getCnabErrorMsg($headerLote->ocorrencias)
+                    ), 
+                    200
+                );
+            }
+            else {
 
 
-        // Return data
-		return new SendRetFileResource([
-            "message" => 'sucess',
-            "link" => 'link'
-		]);
+                //salva o arquivo de retorno
+                $file_name = "retorno_id" . $cnab_id . "_" . date("Y_m_d") . "_" . rand();
+                $teste = file_put_contents(public_path() . "/uploads/" . $file_name . "." . $extension, utf8_decode($fileContent));
+                // Upload to S3
+                $local_url = $file_name . "." . $extension;
+                $s3_url = upload_to_s3($file_name, $local_url);
+                CnabFiles::updateColumn($cnab_id, "ret_url_file", $s3_url); //salva o link do arquivo no banco
+                CnabFiles::updateColumn($cnab_id, "date_ret", date('Y-m-d H:i:s')); //salva a data da remessa no banco
+
+                //Pega os registros de cada saque e da a baixa nos que tiverem  processados corretamente (codigo 00)
+                $registros = $arquivo->getRegistros();
+                $totalPaid = 0;
+                foreach($registros as $registro) {
+                    
+                    $withdrawId = $registro->num_atribuido_empresa; //pega o id do saque para dar baixa (concluido ou erro)
+                    
+                    if($withdrawId) {
+                        if($registro->ocorrencias == "00" && $registro->valor_real) { //se for '00' entao o saque foi realizado corretamente
+                            Withdrawals::updateCnabWithdrawStatus($withdrawId, "concluded");
+                            $totalPaid += $registro->valor_real; // adiciona cada saque que deu sucesso ao valor total pago
+                        } 
+                        else { //qualquer outro valor dierente de 00 (inclusive vazio), significa q deu erro
+                            Withdrawals::updateCnabWithdrawStatus($withdrawId, "error", $this->getCnabErrorMsg($registro->ocorrencias));
+                        }
+                    }
+                }
+
+                CnabFiles::updateColumn($cnab_id, "ret_total", $totalPaid); //salva o total pago na remessa
+
+                 // Return data
+                return new SendRetFileResource([
+                    "message" => 'sucess'
+                ]);
+            }
+
+           
+        }
+        //Se ocorreu algum erro ao no arquivo de retorno
+        catch (Exception $e) {
+            \Log::error($e);
+            $errorMsg = $e->getMessage() ? $e->getMessage() : "Ocorreu um erro ao enviar o arquivo de remessa";
+            return Response::json(array('success' => false, 'errors' => $errorMsg), 200);
+        }
     }
 
 
+
+    private function getCnabErrorMsg($errorCodes) {
+        $errorMsgs = new CnabErrorMsgs();
+        return $errorMsgs->getErrorMsg($errorCodes);
+    }
 
     public function deleteCnabFile()
     {

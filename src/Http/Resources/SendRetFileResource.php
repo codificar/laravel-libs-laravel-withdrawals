@@ -35,8 +35,7 @@ class SendRetFileResource extends JsonResource {
 
         return [
             'success' => true,
-            'message' => $this['message'],
-            'link'    => $this['link'],
+            'message' => $this['message']
         ];
     }
 
