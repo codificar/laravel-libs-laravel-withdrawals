@@ -534,6 +534,58 @@ export default {
 
 				</div>
 
+				<div class="row">
+					<!-- Tipo de compromisso  -->
+					<div class="col-md-4 col-sm-12">
+						<div class="form-group">
+							<label class="control-label">{{trans('withdrawals.rem_type_compromise') }}</label>
+							<input
+							type="text"
+							class="form-control"
+							name="rem_type_compromise"
+							id="rem_type_compromise"
+							v-mask="['##']"
+							required
+							v-model="settings.rem_type_compromise"
+							/>
+						</div>
+					</div>
+					
+					<!-- Codigo do compromisso  -->
+					<div class="col-md-4 col-sm-12">
+						<div class="form-group">
+							<label class="control-label">{{trans('withdrawals.rem_code_compromise') }}</label>
+							<input
+							type="text"
+							class="form-control"
+							name="rem_code_compromise"
+							id="rem_code_compromise"
+							v-mask="['####']"
+							required
+							v-model="settings.rem_code_compromise"
+							/>
+						</div>
+					</div>
+
+					<!-- Parametro de transmissao  -->
+					<div class="col-md-4 col-sm-12">
+						<div class="form-group">
+							<label class="control-label">{{trans('withdrawals.rem_param_transmission') }}</label>
+							<input
+							type="text"
+							class="form-control"
+							name="rem_param_transmission"
+							id="rem_param_transmission"
+							v-mask="['##']"
+							required
+							v-model="settings.rem_param_transmission"
+							/>
+						</div>
+					</div>
+				
+
+				</div>
+
 				<button type="submmit" class="btn btn-success pull-right">{{trans('withdrawals.save')}}</button>
               
 			  </form>

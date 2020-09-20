@@ -24,6 +24,9 @@ return array(
 	'rem_cep'						=> 'CEP',
 	'rem_state'						=> 'State',
 	'rem_operation'					=> 'Operation',
+	'rem_type_compromise'			=> 'Compromisse type',
+	'rem_code_compromise'			=> 'Compromisse code',
+	'rem_param_transmission'		=> 'Transmission param',
 
 	'save'							=> 'To save',
 	'save_question'					=> 'Are you sure you want to save?',

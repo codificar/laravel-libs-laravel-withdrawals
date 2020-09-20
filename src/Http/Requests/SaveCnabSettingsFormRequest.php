@@ -47,7 +47,10 @@ class SaveCnabSettingsFormRequest extends FormRequest {
             'settings.rem_city'             => ['required', 'string'],
             'settings.rem_cep'              => ['required'],
             'settings.rem_state'            => ['required', 'string'],
-            'settings.rem_operation'        => ['string'] //operacao nao eh opcional, nao eh required
+            'settings.rem_operation'        => ['string'], //operacao nao eh opcional, nao eh required
+            'settings.rem_type_compromise'  => ['required', 'string'],
+            'settings.rem_code_compromise'  => ['required', 'string'],
+            'settings.rem_param_transmission'=> ['required', 'string'],
         ];
     }
 
@@ -71,7 +74,10 @@ class SaveCnabSettingsFormRequest extends FormRequest {
             'settings.rem_city'             => 'rem_city is required',
             'settings.rem_cep'              => 'rem_cep is required',
             'settings.rem_state'            => 'rem_state is required',
-            'settings.rem_operation'        => 'rem_operation is string'
+            'settings.rem_operation'        => 'rem_operation is string',
+            'settings.rem_type_compromise'  => 'rem_type_compromise is string',
+            'settings.rem_code_compromise'  => 'rem_code_compromise is string',
+            'settings.rem_param_transmission'=> 'rem_param_transmission is string'
         ];
     }
 

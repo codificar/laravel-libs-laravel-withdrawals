@@ -92,7 +92,10 @@ class Withdrawals extends Eloquent
             "rem_city",
             "rem_cep",
             "rem_state",
-            "rem_operation"
+            "rem_operation",
+            "rem_type_compromise",
+            "rem_code_compromise",
+            "rem_param_transmission",
         );
 
         $query = DB::table('settings')

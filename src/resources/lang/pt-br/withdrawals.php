@@ -24,6 +24,9 @@ return array(
 	'rem_cep'						=> 'CEP',
 	'rem_state'						=> 'Estado (sigla)',
 	'rem_operation'					=> 'Operação (se houver)',
+	'rem_type_compromise'			=> 'Tipo de compromisso',
+	'rem_code_compromise'			=> 'Código do compromisso',
+	'rem_param_transmission'		=> 'Parâmetro de transmissão',
 
 	'save'							=> 'Salvar',
 	'save_question'					=> 'Tem certeza que deseja salvar?',

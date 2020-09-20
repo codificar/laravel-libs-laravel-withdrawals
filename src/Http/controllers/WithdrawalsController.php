@@ -174,7 +174,10 @@ class WithdrawalsController extends Controller {
             "rem_city"              => $request->settings['rem_city'],
             "rem_cep"               => $request->settings['rem_cep'],
             "rem_state"             => $request->settings['rem_state'],
-            "rem_operation"         => $request->settings['rem_operation']
+            "rem_operation"         => $request->settings['rem_operation'],
+            "rem_type_compromise"   => $request->settings['rem_type_compromise'],
+            "rem_code_compromise"   => $request->settings['rem_code_compromise'],
+            "rem_param_transmission"=> $request->settings['rem_param_transmission'],
 		]);
     }
 
@@ -271,7 +274,7 @@ class WithdrawalsController extends Controller {
                         'tipo_inscricao'        => $settings['rem_cpf_or_cnpj'] == "cpf" ? 1 : 2, // 1 para cpf, 2 cnpj 
                         'numero_inscricao'      => substr($settings['rem_document'],0,14), // seu cpf ou cnpj completo - max 14
                         'convenio_caixa'        => substr($settings['rem_agreement_number'],0,6), // informado pelo banco, ate 6 digitos
-                        'param_transmissao'     => '01', // ate 2 digitos, fornecido pela caixa
+                        'param_transmissao'     => substr($settings['rem_param_transmission'],0,2), // ate 2 digitos, fornecido pela caixa
                         'amb_cliente'           => $settings['rem_environment'], // T teste e P producao
                         'agencia'               => substr($settings['rem_agency'],0,5), // sua agencia (pagador), sem o digito verificador 
                         'agencia_dv'            => substr($settings['rem_agency_dv'], 0,1), // somente o digito verificador da agencia 
@@ -289,9 +292,9 @@ class WithdrawalsController extends Controller {
                         'tipo_servico_transf'   => '98', // '98' = Pagamentos Diversos - tem a lista na pagina 39, G025 http://www.caixa.gov.br/Downloads/pagamentos-de-salarios-fornecedores-e-auto-pagamento/Leiaute_CNAB_240_Pagamentos.pdf
                         'forma_lancamento'      => $settings['rem_transfer_type'] == "doc" ? '03' : "41", // 03 DOC. e 41 TED. lista completa na pag 39, G029,  http://www.caixa.gov.br/Downloads/pagamentos-de-salarios-fornecedores-e-auto-pagamento/Leiaute_CNAB_240_Pagamentos.pdf
                         'convenio_caixa'        => substr($settings['rem_agreement_number'],0,6),    // informado pelo banco, convenio caixa (ate 6 digitos)
-                        'tipo_compromisso'      => '01',     //01 Pagamento a Fornecedor - 02 Pagamento de Salarios - 03 Autopagamento - 06 Salario Ampliacao de Base - 11 Debito em Conta			
-                        'codigo_compromisso'    => '0001', // informado pelo banco. 4 Digitos
-                        'param_transmissao'     => '01', // informado pelo banco, ate 2 digitos,
+                        'tipo_compromisso'      => substr($settings['rem_type_compromise'],0,2),     //01 Pagamento a Fornecedor - 02 Pagamento de Salarios - 03 Autopagamento - 06 Salario Ampliacao de Base - 11 Debito em Conta			
+                        'codigo_compromisso'    => substr($settings['rem_code_compromise'],0,4), // informado pelo banco. 4 Digitos
+                        'param_transmissao'     => substr($settings['rem_param_transmission'],0,2), // ate 2 digitos, fornecido pela caixa
                         'logradouro'            => mb_substr($settings['rem_address'],0,30),
                         'numero_endereco'       => substr($settings['rem_address_number'],0,5),
                         'cidade'                => mb_substr($settings['rem_city'],0,20),

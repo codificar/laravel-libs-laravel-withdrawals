@@ -53,6 +53,9 @@ class saveCnabSettingsResource extends JsonResource {
         DB::table('settings')->where('key', 'rem_cep')->update(array('value' => $this['rem_cep']));
         DB::table('settings')->where('key', 'rem_state')->update(array('value' => $this['rem_state']));
         DB::table('settings')->where('key', 'rem_operation')->update(array('value' => $this['rem_operation']));
+        DB::table('settings')->where('key', 'rem_type_compromise')->update(array('value' => $this['rem_type_compromise']));
+        DB::table('settings')->where('key', 'rem_code_compromise')->update(array('value' => $this['rem_code_compromise']));
+        DB::table('settings')->where('key', 'rem_param_transmission')->update(array('value' => $this['rem_param_transmission']));
         return [
             'success' => true,
             'message' => $this['message']
