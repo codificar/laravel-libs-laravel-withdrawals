@@ -404,24 +404,13 @@ class WithdrawalsController extends Controller {
         }
         try {
             $fileContent = file_get_contents($retFile); // ler o conteudo do arquivo
-            $arquivo = new Retorno($fileContent);
+            $arquivo = new Retorno($fileContent, true);
             
             $headerArquivo = $arquivo->getRegistrosRaiz()[0]; //Pega o header do arquivo
             $headerLote = $arquivo->getChild(); // pega o header do lote
 
-            //Verifica se o id do arquivo de remessa nao bate com esse retorno (campo reservado_empresa)
-            if(intval($headerArquivo->reservado_empresa) != intval($cnab_id)) {
-                return Response::json(
-                    array(
-                        'success' => false, 
-                        'errors' => 'O arquivo de retorno enviado nao pertence a esse arquivo de remessa.'
-                    ), 
-                    200
-                );
-            }
-
             //Verifica se o arquivo nao foi processado (codigo 00 ou string vazia quer dizer que foi processado)
-            else if($headerLote->ocorrencias != "00" && $headerLote->ocorrencias != "") {
+            if($headerLote->ocorrencias != "00" && $headerLote->ocorrencias != "") {
                 return Response::json(
                     array(
                         'success' => false, 
@@ -432,19 +421,35 @@ class WithdrawalsController extends Controller {
             }
             else {
 
-
-                //salva o arquivo de retorno
-                $file_name = "retorno_id" . $cnab_id . "_" . date("Y_m_d") . "_" . rand();
-                $teste = file_put_contents(public_path() . "/uploads/" . $file_name . "." . $extension, utf8_decode($fileContent));
-                // Upload to S3
-                $local_url = $file_name . "." . $extension;
-                $s3_url = upload_to_s3($file_name, $local_url);
-                CnabFiles::updateColumn($cnab_id, "ret_url_file", $s3_url); //salva o link do arquivo no banco
-                CnabFiles::updateColumn($cnab_id, "date_ret", date('Y-m-d H:i:s')); //salva a data da remessa no banco
-
-                //Pega os registros de cada saque e da a baixa nos que tiverem  processados corretamente (codigo 00)
+                //Pega os registros de cada saque para dar baixa nos que tiverem processados corretamente (codigo 00)
                 $registros = $arquivo->getRegistros();
                 $totalPaid = 0;
+
+
+
+                //Aqui eh checado se todos os saques desse arquivo de retorno esta associado ao arquivo de remessa corretamente.
+                foreach($registros as $registro) {
+                    $withdrawId = $registro->num_atribuido_empresa; //pega o id do saque
+
+                    //Verifica se existe esse saque no banco de dados.
+                    if($withdrawId && Withdrawals::checkIfWithdrawExists($withdrawId)) {
+
+                        //Verifica se esse saque pertence ao arquivo cnab desse retorno que esta sendo enviado
+                        if(!Withdrawals::checkIfWithdrawBelongCnab($withdrawId, $cnab_id)) {
+                            return Response::json(
+                                array(
+                                    'success' => false, 
+                                    'errors' => 'O arquivo de retorno enviado nao pertence a esse arquivo de remessa.'
+                                ), 
+                                200
+                            );
+                        }
+
+                    }
+                }
+
+
+                //Aqui as baixas no saque sao realizadas
                 foreach($registros as $registro) {
                     
                     $withdrawId = $registro->num_atribuido_empresa; //pega o id do saque para dar baixa (concluido ou erro)
@@ -461,6 +466,15 @@ class WithdrawalsController extends Controller {
                 }
 
                 CnabFiles::updateColumn($cnab_id, "ret_total", $totalPaid); //salva o total pago na remessa
+
+                //salva o arquivo de retorno
+                $file_name = "retorno_id" . $cnab_id . "_" . date("Y_m_d") . "_" . rand();
+                $teste = file_put_contents(public_path() . "/uploads/" . $file_name . "." . $extension, utf8_decode($fileContent));
+                // Upload to S3
+                $local_url = $file_name . "." . $extension;
+                $s3_url = upload_to_s3($file_name, $local_url);
+                CnabFiles::updateColumn($cnab_id, "ret_url_file", $s3_url); //salva o link do arquivo no banco
+                CnabFiles::updateColumn($cnab_id, "date_ret", date('Y-m-d H:i:s')); //salva a data da remessa no banco
 
                  // Return data
                 return new SendRetFileResource([

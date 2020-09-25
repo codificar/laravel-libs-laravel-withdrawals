@@ -318,4 +318,21 @@ class Withdrawals extends Eloquent
         }
         return $query;
     }
+
+    public static function checkIfWithdrawExists($withdrawId) {
+
+        $query = DB::table('withdraw')
+            ->where('id', '=', $withdrawId)
+            ->first();
+        
+        return $query ? true : false;
+    }
+
+    public static function checkIfWithdrawBelongCnab($withdrawId, $cnab_file_id) {
+        $query = DB::table('withdraw')
+            ->where('id', '=', $withdrawId)
+            ->where('cnab_file_id', '=', $cnab_file_id)
+            ->first();
+        return $query ? true : false;
+    }
 }
