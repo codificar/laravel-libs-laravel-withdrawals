@@ -32,7 +32,7 @@
 @stop
 
 @section('javascripts')
-<script src="/libs/lang.trans/withdrawals"> </script> 
+<script src="/libs/withdrawals/lang.trans/withdrawals"> </script> 
 
 
 

@@ -59,8 +59,8 @@ Route::group(array('namespace' => 'Codificar\Withdrawals\Http\Controllers'), fun
 /**
  * Rota para permitir utilizar arquivos de traducao do laravel (dessa lib) no vue js
  */
-Route::get('/libs/lang.trans/{file}', function () {
-    $fileNames = explode(',', Request::segment(3));
+Route::get('/libs/withdrawals/lang.trans/{file}', function () {
+    $fileNames = explode(',', Request::segment(4));
     $lang = config('app.locale');
     $files = array();
     foreach ($fileNames as $fileName) {
