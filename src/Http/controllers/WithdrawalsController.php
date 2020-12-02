@@ -404,7 +404,7 @@ class WithdrawalsController extends Controller {
         }
         try {
             $fileContent = file_get_contents($retFile); // ler o conteudo do arquivo
-            $arquivo = new Retorno($fileContent, true);
+            $arquivo = new Retorno($fileContent);
             
             $headerArquivo = $arquivo->getRegistrosRaiz()[0]; //Pega o header do arquivo
             $headerLote = $arquivo->getChild(); // pega o header do lote
