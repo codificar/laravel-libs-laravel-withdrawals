@@ -42,7 +42,7 @@
 
     @case('admin')
 		@section('content')
-		<div id="VueJs">
+		<div id="VueJs" class="col-sm-12">
         @break
 
 	@case('user')

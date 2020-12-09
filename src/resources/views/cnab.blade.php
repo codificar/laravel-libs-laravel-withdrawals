@@ -17,7 +17,7 @@
 
 
 @section('content')
-	<div id="VueJs">
+	<div id="VueJs" class="col-sm-12">
 		<cnabsettings 
 			settings="{{ json_encode($settings)}}"	
 			cnab-files="{{ json_encode($cnabFiles)}}"	

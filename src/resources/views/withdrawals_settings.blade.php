@@ -17,7 +17,7 @@
 
 
 @section('content')
-	<div id="VueJs">
+	<div id="VueJs" class="col-sm-12">
 		<withdrawalssettings 
 			settings="{{ json_encode($settings)}}"	
 		>
