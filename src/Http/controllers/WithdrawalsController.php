@@ -192,11 +192,11 @@ class WithdrawalsController extends Controller {
             $error = "Preencha o documento";
         else if(!$settings['rem_agency']) 
             $error = "Preencha a agencia";
-        else if(!$settings['rem_agency_dv']) 
+        else if(!$settings['rem_agency_dv'] && $settings['rem_agency_dv'] != 0) 
             $error = "Preencha o digito da agencia";
         else if(!$settings['rem_account']) 
             $error = "Preencha a conta bancaria";
-        else if(!$settings['rem_account_dv']) 
+        else if(!$settings['rem_account_dv'] && $settings['rem_account_dv'] != 0) 
             $error = "Preencha o digito da conta";
         else if(!$settings['rem_bank_code']) 
             $error = "Preencha o banco";
