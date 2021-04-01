@@ -209,6 +209,42 @@ export default {
 			if(name=(new RegExp('[?&]'+encodeURIComponent(name)+'=([^&]*)')).exec(location.search))
 				return decodeURIComponent(name[1]);
 		},
+		rejectWithdraw() {
+			let formData = new FormData();
+			formData.append('withdraw_id', this.current_modal_id);
+			
+			axios.post( '/admin/libs/withdrawals/reject_withdraw', formData, {
+				headers: {
+					'Content-Type': 'multipart/form-data'
+				}
+			}).then(response => {
+				console.log('dados:', response);
+				$('#modalRejectWithdraw').modal('hide');
+
+				if (response.data.success) {
+					this.reloadPageWithMessage(this.trans("withdrawals.success_confirm_withdrawals"));
+				} else {
+					this.showErrorMsg(response.data.errors);
+				}
+			}).catch(error => {
+				$('#modalRejectWithdraw').modal('hide');
+				console.log(error);
+				this.showErrorMsg(this.trans("withdrawals.error"));
+				return false;
+			});
+		},
+		showModalRejectWithdraw(currentId) {
+
+			//when click in modal, reset the image
+			this.fileWithdraw = '';
+			$("#modalForm").trigger("reset");
+
+			//set the current modal associed id
+			this.current_modal_id = currentId;
+
+			//open modal
+			$("#modalRejectWithdraw").modal("show");
+		},
 	},	 
 
 	mounted() {
@@ -323,7 +359,6 @@ export default {
 		<div class="col-lg-12" v-if="!isEmpty(withdrawals_report.data)">
 			<div class="card">
 				<div class="card-block">
-					</h3>
 					<div class="card-block">
 						<table class="table table-bordered">
 							<tr>
@@ -355,6 +390,7 @@ export default {
 									<p v-if="entry.type == 'requested'">Solicitado</p>
 									<p v-if="entry.type == 'awaiting_return'">Aguardando arq. retorno</p>
 									<p v-if="entry.type == 'concluded'">Concluído</p>
+									<p v-if="entry.type == 'rejected'">Rejeitado</p>
 									<a 
 										v-if="entry.type == 'error'"
 										style="cursor: pointer; color: red" 
@@ -370,20 +406,27 @@ export default {
 								<td>{{ (new Date(entry.date)).toTimeString().split(":")[0] }}:{{ (new Date(entry.date)).toTimeString().split(":")[1] }}</td>
 								<td><p class="text-success">{{ currency_format(entry.value, currencySymbol) }}</p></td>
 
-								 <td v-if="Enviroment == 'admin'">
+								<td v-if="Enviroment == 'admin'">
 									<div class="dropdown">
 										<button class="btn btn-info dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown">
 											{{trans('withdrawals.action') }}
 											<span class="caret"></span>
 										</button>
 
-										<div class="dropdown-menu dropdown-menu-right" role="menu" aria-labelledby="dropdownMenu1">
-										 	<a 
+										<div v-if="entry.type !== 'concluded' && entry.type !== 'rejected'" class="dropdown-menu dropdown-menu-right" role="menu" aria-labelledby="dropdownMenu1">
+										 	<a											 	 
 											 	class="dropdown-item" 
 												style="cursor: pointer;" 
 												v-on:click="showModalConfirmWithdraw(entry.id)"
 											>
 												{{ trans('withdrawals.confirm') }}
+											</a>
+											<a											 	 
+											 	class="dropdown-item" 
+												style="cursor: pointer;" 
+												v-on:click="showModalRejectWithdraw(entry.id)"
+											>
+												{{ trans('withdrawals.reject') }}
 											</a>
 										</div>
 									</div>
@@ -430,6 +473,27 @@ export default {
 							</div>
 						</div>
 						<!-- /.modal -->
+
+						<!-- Modal rejeitar saque -->
+						<div v-if="Enviroment == 'admin'" class="modal" :id="'modalRejectWithdraw'" tabindex="-1" role="dialog" aria-labelledby="modalmodalRejectWithdrawLabel">
+							<div class="modal-dialog" role="document">
+								<div class="modal-content">
+									<div class="modal-header">
+										<h4 class="modal-title">Rejeitar saque</h4>
+										<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+									</div>
+									<div class="modal-body">
+										<form id="modalForm">
+											<label for="confirm_withdraw_picture">Você tem certeza que deseja rejeitar essa solicitação de saque?</label>
+											<br>
+											<button type="button" v-on:click="rejectWithdraw(this.current_modal_id)" class="btn btn-success right">Enviar</button>											
+										</form>
+									</div>
+									
+								</div>
+							</div>
+						</div>
+						<!-- Fim do modal de rejeitar saque -->
 
 
 

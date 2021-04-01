@@ -335,4 +335,15 @@ class Withdrawals extends Eloquent
             ->first();
         return $query ? true : false;
     }
+
+	public static function updateWithdrawStatus($withdraw_id, $status) {
+		DB::table('withdraw')
+			->where('id', '=', $withdraw_id)
+			->update(
+				[
+					'type' => $status,
+					'updated_at' => date('Y-m-d H:i:s')
+				]
+			);
+	}
 }

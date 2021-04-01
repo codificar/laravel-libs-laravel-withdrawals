@@ -16,6 +16,7 @@ use Codificar\Withdrawals\Http\Requests\SaveCnabSettingsFormRequest;
 use Codificar\Withdrawals\Http\Requests\ConfirmWithdrawFormRequest;
 use Codificar\Withdrawals\Http\Requests\SendRetFileFormRequest;
 use Codificar\Withdrawals\Http\Requests\SaveWithdrawalsSettingsFormRequest;
+use Codificar\Withdrawals\Http\Requests\RejectWithdrawFormRequest;
 
 //Resource
 use Codificar\Withdrawals\Http\Resources\ProviderWithdrawalsReportResource;
@@ -25,6 +26,7 @@ use Codificar\Withdrawals\Http\Resources\saveCnabSettingsResource;
 use Codificar\Withdrawals\Http\Resources\SendRetFileResource;
 use Codificar\Withdrawals\Http\Resources\getWithdrawSettingsResource;
 use Codificar\Withdrawals\Http\Resources\saveWithdrawalsSettingsResource;
+use Codificar\Withdrawals\Http\Resources\RejectWithdrawResource;
 
 //Gerar arquivo de remessa CNAB
 use \CnabPHP\Remessa;
@@ -863,9 +865,16 @@ class WithdrawalsController extends Controller {
             case "error":
                 $value = trans("libTans::withdrawals.error");
                 break;
+			case "rejected":
+				$value = trans("libTans::withdrawals.rejected");
+                break;
         }
         return $value;
-    } 
+    }
+	
+	public function rejectWithdraw(RejectWithdrawFormRequest $request) {
+		Withdrawals::updateWithdrawStatus($request->withdraw_id, 'rejected');
 
-
+		return new RejectWithdrawResource(["message" => 'success']);
+	}
 }

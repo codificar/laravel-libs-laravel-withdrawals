@@ -21,6 +21,7 @@ Route::group(array('namespace' => 'Codificar\Withdrawals\Http\Controllers'), fun
             Route::get('/', array('as' => 'webAdminWithdrawalsReport', 'uses' => 'WithdrawalsController@getWithdrawalsReportWebAdmin'));
             Route::post('/confirm_withdraw', array('as' => 'webAdminConfirmWithdraw', 'uses' => 'WithdrawalsController@confirmWithdraw'));
             Route::get('/download', array('as' => 'webAdminDownloadWithdraw', 'uses' => 'WithdrawalsController@downloadWithdrawalsReportAdmin'));
+			Route::post('/reject_withdraw', array('as' => 'webAdminRejectWithdraw', 'uses' => 'WithdrawalsController@rejectWithdraw'));
         });
 
         //Configuracoes de saque
