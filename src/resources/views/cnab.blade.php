@@ -24,7 +24,8 @@
 			total-requested="{{ $totalRequested }}"
 			total-awaiting-return="{{ $totalAwaitingReturn }}"
 			total-error="{{ $totalError }}"
-			currency-symbol="{{\Settings::getCurrency()}}">
+			currency-symbol="{{\Settings::getCurrency()}}"
+			withdrawals-report="{{ $withdrawals_report }}">	
 		>
 		</cnabsettings>
 		
@@ -41,6 +42,5 @@
 
 
 
-<script src="{{ elixir('vendor/codificar/withdrawals/withdrawals.vue.js') }}"> </script> 
-       
+<script src="{{ elixir('vendor/codificar/withdrawals/withdrawals.vue.js') }}"> </script>
 @stop

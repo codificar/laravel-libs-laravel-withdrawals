@@ -8,14 +8,17 @@ export default {
 	"TotalRequested",
 	"TotalAwaitingReturn",
 	"TotalError",
-	"currencySymbol"
+	"currencySymbol",
+	"WithdrawalsReport"
   ],
   data() {
     return {
       settings: {},
 	  cnab_files: {},
 	  retFile: '',
-	  current_ret_file_id: null
+	  current_ret_file_id: null,
+	  withdrawals_report: "",
+	  checkedWithdraws:[]
     };
   },
   methods: {
@@ -108,15 +111,21 @@ export default {
 			}
 		});
 	},
-	createNewRemFile() {
+	createNewRemFile(selectWithdralsToCnabFile = false) {
 
-		//Call api
-		this.postApiAndRealod(
-			"/admin/libs/cnab_settings/create_cnab_file", 
-			{ settings: this.settings },
-			this.trans("withdrawals.success_created_cnab")
-		);
-		
+		if (selectWithdralsToCnabFile == true) {
+			this.postApiAndRealod(
+				"/admin/libs/cnab_settings/create_cnab_file", 
+				{ settings: this.settings, selectedWithdrawals: this.checkedWithdraws },
+				this.trans("withdrawals.success_created_cnab")
+			);
+		} else {
+			this.postApiAndRealod(
+				"/admin/libs/cnab_settings/create_cnab_file", 
+				{ settings: this.settings },
+				this.trans("withdrawals.success_created_cnab")
+			);
+		}	
 	},
 
 	reloadPageWithMessage(message) {
@@ -177,6 +186,42 @@ export default {
 			return false;
 		});
 
+	},
+
+	selectWithdralsToCnabFile() {
+		//open modal
+		$("#modalSelectWithdrawals").modal("show");
+	},
+
+	filterWithdrawals(page = 1) {
+		var status = "";
+		var receipt = "";
+		
+
+		if(this.Enviroment == "admin") {
+			var route = "/admin/libs/withdrawals"
+		} else if(this.Enviroment == "provider") {
+			var route = "/provider/libs/withdrawals"
+		}
+
+		if(this.status == "requested" || this.status == "awaiting_return" || this.status == "concluded" || this.status == "error" || this.status == "rejected") {
+			status = this.status;
+		}
+		if(this.receipt == 1 || this.receipt == "2" || this.receipt == 2 || this.receipt == "2") {
+			receipt = parseInt(this.receipt)
+		}
+
+		if(!parseInt(page)) {
+			page = 1;
+		}
+
+		window.location.assign(
+			route + '?' +
+			'status=' + status + "&" +
+			'receipt=' + receipt + "&" +
+			'page=' + page
+
+		);
 	}
 	
   },
@@ -189,6 +234,7 @@ export default {
 	});
 	this.settings = settingsJson;
 	this.cnab_files = JSON.parse(this.CnabFiles );
+	this.withdrawals_report = JSON.parse(this.WithdrawalsReport);
   }
 };
 </script>
@@ -607,7 +653,6 @@ export default {
 				<div class="col-lg-12">
 					<div class="card">
 						<div class="card-block">
-							</h3>
 							<div class="card-block">
 
 								<table class="table table-bordered">
@@ -648,7 +693,7 @@ export default {
 										<td>{{ row.date_rem }}</td>
 										<td>
 											<a v-if="row.ret_url_file" :href="row.ret_url_file" download>Baixar</a>
-											<a v-else v-on:click="sendRetFile(row.id)" style="cursor: pointer;"class="text-primary">Enviar</a>
+											<a v-else v-on:click="sendRetFile(row.id)" style="cursor: pointer;" class="text-primary">Enviar</a>
 										</td>
 										<td>{{ row.date_ret }}</td>
 										<td>{{ currency_format(row.rem_total, currencySymbol) }}</td>
@@ -695,9 +740,9 @@ export default {
 													<label>3. Apenas arquivos remessa que não possui retorno atrelados podem ser deletados.</label>
 													<label>4. Se nas configurações acima estiver configurado como ambiente "Teste", os saques com status "Solicitado" não serão afetados.</label>
 													
-													<button type="button" v-on:click="createNewRemFile()" class="btn btn-success right">Gerar arquivo remessa</button>
-													
-												</form>
+													<button type="button" v-on:click="createNewRemFile()" class="btn btn-success right">Gerar arquivo remessa</button>									
+												</form><br>
+												<button type="button" class="btn btn-success" v-on:click="selectWithdralsToCnabFile()">Selecionar saques</button>
 											</div>
 											
 										</div>
@@ -747,5 +792,46 @@ export default {
       </div>
     </div>
 
+	<div class="modal" id="modalSelectWithdrawals" tabindex="-1" role="dialog" aria-labelledby="modalSelectWithdrawals">
+		<div class="col-lg-12" v-if="!isEmpty(withdrawals_report.data)">
+			<div class="card">
+				<div class="card-block">
+					<div class="card-block">
+						<table class="table table-bordered">
+							<tr>
+                                <th>{{ trans("withdrawals.id") }}</th>
+
+                                <th>{{ trans("withdrawals.name") }}</th>
+                                <th>{{ trans("withdrawals.email") }}</th>
+                                <th>{{ trans("withdrawals.bank") }}</th>
+                                <th>{{ trans("withdrawals.agency") }}</th>
+                                <th>{{ trans("withdrawals.account") }}</th>
+                                <th>{{ trans("withdrawals.holder_document") }}</th>
+								<th>{{ trans("withdrawals.finance_date") }}</th>
+								<th>{{ trans("withdrawals.finance_time") }}</th>
+								<th>{{ trans("withdrawals.finance_value") }}</th>
+								<th>Selecionar</th>
+							</tr>
+							<tr v-for="entry in withdrawals_report.data" v-bind:key="entry.id" total=0>
+								<td>{{ entry.id }}</td>
+                                <td>{{ entry.name }}</td>
+                                <td>{{ entry.email }}</td>
+                                <td>{{ entry.bank }}</td>
+                                <td>{{ entry.agency + "-" + entry.agency_digit }}</td>
+                                <td>{{ entry.account + "-" + entry.account_digit }}</td>
+                                <td>{{ entry.document }}</td>
+                                <td><p v-if="((new Date(entry.date)).toLocaleString().split(' ')[0]) != '31/12/1969'">{{ (new Date(entry.date)).toLocaleString().split(" ")[0] }}</p></td>
+								<td>{{ (new Date(entry.date)).toTimeString().split(":")[0] }}:{{ (new Date(entry.date)).toTimeString().split(":")[1] }}</td>
+								<td><p class="text-success">{{ currency_format(entry.value, currencySymbol) }}</p></td>		
+								<td><input :id="entry.id" :value="entry.id" name="entry" type="checkbox" v-model="checkedWithdraws" /></td>				
+							</tr>
+						</table>		
+					</div>
+					<pagination :data="withdrawals_report" @pagination-change-page="filterWithdrawals"></pagination>
+					<button type="button" v-on:click="createNewRemFile(true)" class="btn btn-success right">Gerar arquivo remessa</button>
+				</div>
+			</div>
+		</div>
+	</div>
   </div>
 </template>

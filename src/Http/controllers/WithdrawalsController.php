@@ -16,6 +16,7 @@ use Codificar\Withdrawals\Http\Requests\SaveCnabSettingsFormRequest;
 use Codificar\Withdrawals\Http\Requests\ConfirmWithdrawFormRequest;
 use Codificar\Withdrawals\Http\Requests\SendRetFileFormRequest;
 use Codificar\Withdrawals\Http\Requests\SaveWithdrawalsSettingsFormRequest;
+use Codificar\Withdrawals\Http\Requests\RejectWithdrawFormRequest;
 
 //Resource
 use Codificar\Withdrawals\Http\Resources\ProviderWithdrawalsReportResource;
@@ -25,6 +26,7 @@ use Codificar\Withdrawals\Http\Resources\saveCnabSettingsResource;
 use Codificar\Withdrawals\Http\Resources\SendRetFileResource;
 use Codificar\Withdrawals\Http\Resources\getWithdrawSettingsResource;
 use Codificar\Withdrawals\Http\Resources\saveWithdrawalsSettingsResource;
+use Codificar\Withdrawals\Http\Resources\RejectWithdrawResource;
 
 //Gerar arquivo de remessa CNAB
 use \CnabPHP\Remessa;
@@ -113,13 +115,18 @@ class WithdrawalsController extends Controller {
         $totalRequested = Withdrawals::getTotalValueRequestedWithdrawals();
         $totalAwaitingReturn = Withdrawals::getTotalValueAwaitingReturnWithdrawals();
         $TotalError = Withdrawals::getTotalErroWithdrawals();
+
+		//Get the withdrawals report
+		$withdrawals_report = Withdrawals::getWithdrawals(true, "admin", null, "requested", null);
+
         return View::make('withdrawals::cnab')
             ->with([
                 'settings' => $settings,
                 'cnabFiles' => $cnabFiles,
                 'totalRequested' => $totalRequested,
                 'totalAwaitingReturn' => $totalAwaitingReturn,
-                'totalError' => $TotalError
+                'totalError' => $TotalError,
+				'withdrawals_report' => json_encode($withdrawals_report),
             ]);
     
     }
@@ -223,7 +230,7 @@ class WithdrawalsController extends Controller {
             return null;
     }
 
-    public function createCnabFile()
+    public function createCnabFile(Request $request)
     {
         $total = Withdrawals::getTotalValueRequestedWithdrawals();
 
@@ -263,6 +270,9 @@ class WithdrawalsController extends Controller {
                     //Pega as informacoes dos favorecidos
                     $beneficiariesData = Withdrawals::getProviderDataToCreateCnab();
 
+					if ($request->selectedWithdrawals) {
+						$beneficiariesData = Withdrawals::getSelectedProviderDataToCreateCnab($request->selectedWithdrawals);
+					}
 
                     /**
                      * documentos uteis:
@@ -863,9 +873,16 @@ class WithdrawalsController extends Controller {
             case "error":
                 $value = trans("libTans::withdrawals.error");
                 break;
+			case "rejected":
+				$value = trans("libTans::withdrawals.rejected");
+                break;
         }
         return $value;
-    } 
+    }
+	
+	public function rejectWithdraw(RejectWithdrawFormRequest $request) {
+		Withdrawals::updateWithdrawStatus($request->withdraw_id, 'rejected');
 
-
+		return new RejectWithdrawResource(["message" => 'success']);
+	}
 }

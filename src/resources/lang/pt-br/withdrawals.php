@@ -141,4 +141,6 @@ return array(
 	'with_draw_tax'					=> 'Taxa de saque',
 	'with_draw_min_limit'			=> 'Valor mínimo para saque',
 	'with_draw_max_limit'			=> 'Valor máximo para saque',
+	'rejected'						=> 'Rejeitado',
+	'reject'						=> 'Rejeitar'
 );

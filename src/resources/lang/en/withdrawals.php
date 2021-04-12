@@ -141,4 +141,6 @@ return array(
 	'with_draw_tax'					=> 'Withdrawal fee',
 	'with_draw_min_limit'			=> 'Minimum withdrawal amount',
 	'with_draw_max_limit'			=> 'Maximum withdrawal amount',
+	'rejected'						=> 'Rejected',
+	'reject'						=> 'Reject'
 );
