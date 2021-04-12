@@ -62,7 +62,7 @@ export default {
 				}
 				
 
-				if(this.status == "requested" || this.status == "awaiting_return" || this.status == "concluded" || this.status == "error") {
+				if(this.status == "requested" || this.status == "awaiting_return" || this.status == "concluded" || this.status == "error" || this.status == "rejected") {
 					status = this.status;
 				}
 				if(this.receipt == 1 || this.receipt == "2" || this.receipt == 2 || this.receipt == "2") {
@@ -87,7 +87,7 @@ export default {
 				var route = "/provider/libs/withdrawals"
 			}
 
-			if(this.status == "requested" || this.status == "awaiting_return" || this.status == "concluded" || this.status == "error") {
+			if(this.status == "requested" || this.status == "awaiting_return" || this.status == "concluded" || this.status == "error" || this.status == "rejected") {
 				status = this.status;
 			}
 			if(this.receipt == 1 || this.receipt == "2" || this.receipt == 2 || this.receipt == "2") {
@@ -308,6 +308,7 @@ export default {
 														<option value="awaiting_return">{{trans('withdrawals.awaiting_return') }}</option>
 														<option value="concluded">{{trans('withdrawals.concluded') }}</option>
 														<option value="error">{{trans('withdrawals.error') }}</option>
+														<option value="rejected">{{trans('withdrawals.rejected') }}</option>
                                                     </select>
                                                 </div>
                                             </div>

@@ -115,13 +115,18 @@ class WithdrawalsController extends Controller {
         $totalRequested = Withdrawals::getTotalValueRequestedWithdrawals();
         $totalAwaitingReturn = Withdrawals::getTotalValueAwaitingReturnWithdrawals();
         $TotalError = Withdrawals::getTotalErroWithdrawals();
+
+		//Get the withdrawals report
+		$withdrawals_report = Withdrawals::getWithdrawals(true, "admin", null, "requested", null);
+
         return View::make('withdrawals::cnab')
             ->with([
                 'settings' => $settings,
                 'cnabFiles' => $cnabFiles,
                 'totalRequested' => $totalRequested,
                 'totalAwaitingReturn' => $totalAwaitingReturn,
-                'totalError' => $TotalError
+                'totalError' => $TotalError,
+				'withdrawals_report' => json_encode($withdrawals_report),
             ]);
     
     }
@@ -225,7 +230,7 @@ class WithdrawalsController extends Controller {
             return null;
     }
 
-    public function createCnabFile()
+    public function createCnabFile(Request $request)
     {
         $total = Withdrawals::getTotalValueRequestedWithdrawals();
 
@@ -265,6 +270,9 @@ class WithdrawalsController extends Controller {
                     //Pega as informacoes dos favorecidos
                     $beneficiariesData = Withdrawals::getProviderDataToCreateCnab();
 
+					if ($request->selectedWithdrawals) {
+						$beneficiariesData = Withdrawals::getSelectedProviderDataToCreateCnab($request->selectedWithdrawals);
+					}
 
                     /**
                      * documentos uteis:
