@@ -9,7 +9,7 @@ use Carbon\Carbon;
 use Eloquent;
 use Finance, Ledger;
 use DB;
-
+use LedgerBankAccount;
 
 class Withdrawals extends Eloquent
 {
@@ -384,5 +384,34 @@ class Withdrawals extends Eloquent
             $totalValue->totalValue *= -1;
         }
         return $query;
+	}
+
+	public static function rejectWithdraw($id) {
+		$withdraw = self::find($id);
+
+		$finance_withdraw		= Finance::find($withdraw->finance_withdraw_id);
+		$finance_withdraw_tax	= Finance::find($withdraw->finance_withdraw_tax_id);
+		$bank_account			= LedgerBankAccount::where('ledger_id', $finance_withdraw->ledger_id)->first();
+
+		$finance_withdraw_id		= $withdraw->finance_withdraw_id;
+		$finance_withdraw_tax_id	= $withdraw->finance_withdraw_tax_id;
+
+		$withdraw->finance_withdraw_id = Finance::rejectWithDrawRequest(
+			$finance_withdraw->ledger_id, 
+			$finance_withdraw->value * -1, 
+			$bank_account->id, 
+			\Auth::id()
+		)->id;
+
+		$withdraw->finance_withdraw_tax_id = Finance::rejectWithDrawRequest(
+			$finance_withdraw_tax->ledger_id, 
+			$finance_withdraw_tax->value * -1, 
+			$bank_account->id, 
+			\Auth::id()
+		)->id;
+
+		$withdraw->save();
+
+		Finance::destroy([$finance_withdraw_id, $finance_withdraw_tax_id]);
 	}
 }

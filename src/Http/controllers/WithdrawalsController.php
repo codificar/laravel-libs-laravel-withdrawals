@@ -881,8 +881,19 @@ class WithdrawalsController extends Controller {
     }
 	
 	public function rejectWithdraw(RejectWithdrawFormRequest $request) {
-		Withdrawals::updateWithdrawStatus($request->withdraw_id, 'rejected');
+		try {
+			Withdrawals::rejectWithdraw($request->withdraw_id);
+			Withdrawals::updateWithdrawStatus($request->withdraw_id, 'rejected');
 
-		return new RejectWithdrawResource(["message" => 'success']);
+			$message = "success";
+			$success = true;
+		} catch (\Throwable $th) {
+			\Log::error($th);
+
+			$message = $th;
+			$success = false;
+		}
+		
+		return new RejectWithdrawResource(["message" => $message, "success" => $success]);
 	}
 }
