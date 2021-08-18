@@ -396,14 +396,14 @@ class Withdrawals extends Eloquent
 		$finance_withdraw_id		= $withdraw->finance_withdraw_id;
 		$finance_withdraw_tax_id	= $withdraw->finance_withdraw_tax_id;
 
-		$withdraw->finance_withdraw_id = Finance::rejectWithDrawRequest(
+		$withdraw->finance_withdraw_id = Finance::createWithDrawRequest(
 			$finance_withdraw->ledger_id, 
 			$finance_withdraw->value * -1, 
 			$bank_account->id, 
 			\Auth::id()
 		)->id;
 
-		$withdraw->finance_withdraw_tax_id = Finance::rejectWithDrawRequest(
+		$withdraw->finance_withdraw_tax_id = Finance::createWithDrawRequest(
 			$finance_withdraw_tax->ledger_id, 
 			$finance_withdraw_tax->value * -1, 
 			$bank_account->id, 
