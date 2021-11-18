@@ -403,12 +403,13 @@ class Withdrawals extends Eloquent
 			\Auth::id()
 		)->id;
 
-		$withdraw->finance_withdraw_tax_id = Finance::createWithDrawRequest(
-			$finance_withdraw_tax->ledger_id, 
-			$finance_withdraw_tax->value * -1, 
-			$bank_account->id, 
-			\Auth::id()
-		)->id;
+        if($finance_withdraw_tax)
+            $withdraw->finance_withdraw_tax_id = Finance::createWithDrawRequest(
+                $finance_withdraw_tax->ledger_id, 
+                $finance_withdraw_tax->value * -1, 
+                $bank_account->id, 
+                \Auth::id()
+            )->id;
 
 		$withdraw->save();
 
