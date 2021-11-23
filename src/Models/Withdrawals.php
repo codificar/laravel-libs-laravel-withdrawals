@@ -150,6 +150,17 @@ class Withdrawals extends Eloquent
         $total = -1 * $query[0]->totalValue;
         return $total;
     }
+    public static function getSelectedTotalValueRequestedWithdrawals($ids)
+    {
+        $query = DB::table('withdraw')
+            ->where('withdraw.type', '=', 'requested')
+            ->whereIn('withdraw.id', $ids)
+            ->join('finance', 'finance.id', '=', 'withdraw.finance_withdraw_id')  
+            ->select( DB::raw('sum( finance.value ) as totalValue') )
+            ->get();
+        $total = -1 * $query[0]->totalValue;
+        return $total;
+    }
     public static function getTotalValueAwaitingReturnWithdrawals()
     {
         $query = DB::table('withdraw')
@@ -402,14 +413,14 @@ class Withdrawals extends Eloquent
 			$bank_account->id, 
 			\Auth::id()
 		)->id;
-
+        
         if($finance_withdraw_tax)
-            $withdraw->finance_withdraw_tax_id = Finance::createWithDrawRequest(
-                $finance_withdraw_tax->ledger_id, 
-                $finance_withdraw_tax->value * -1, 
-                $bank_account->id, 
-                \Auth::id()
-            )->id;
+		$withdraw->finance_withdraw_tax_id = Finance::createWithDrawRequest(
+			$finance_withdraw_tax->ledger_id, 
+			$finance_withdraw_tax->value * -1, 
+			$bank_account->id, 
+			\Auth::id()
+		)->id;
 
 		$withdraw->save();
 

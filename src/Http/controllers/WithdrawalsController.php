@@ -232,8 +232,15 @@ class WithdrawalsController extends Controller {
 
     public function createCnabFile(Request $request)
     {
-        $total = Withdrawals::getTotalValueRequestedWithdrawals();
-
+        //Pega as informacoes dos favorecidos
+        if ($request->selectedWithdrawals) {
+            $beneficiariesData = Withdrawals::getSelectedProviderDataToCreateCnab($request->selectedWithdrawals);
+            $total = Withdrawals::getSelectedTotalValueRequestedWithdrawals($request->selectedWithdrawals);
+        } else {
+            $beneficiariesData = Withdrawals::getProviderDataToCreateCnab();
+            $total = Withdrawals::getTotalValueRequestedWithdrawals();
+        }
+       
         //Se o total eh maior que 0, entao gera um arquivo de remessa
         if($total > 0) {
 
@@ -266,13 +273,7 @@ class WithdrawalsController extends Controller {
                 $modelCnabFile->save();
 
                 try {
-                    
-                    //Pega as informacoes dos favorecidos
-                    $beneficiariesData = Withdrawals::getProviderDataToCreateCnab();
-
-					if ($request->selectedWithdrawals) {
-						$beneficiariesData = Withdrawals::getSelectedProviderDataToCreateCnab($request->selectedWithdrawals);
-					}
+                
 
                     /**
                      * documentos uteis:
