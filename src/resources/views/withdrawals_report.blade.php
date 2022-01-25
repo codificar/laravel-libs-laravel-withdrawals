@@ -65,7 +65,7 @@
 		enviroment="{{ $enviroment }}"
 		with-draw-request-route="{{ $enviroment == 'admin' ? null : URL::Route($enviroment.'WithdrawAdd') }}"
 		create-bank-account-route="{{ $enviroment == 'admin' ? null : URL::Route($enviroment.'AddBankAccount') }}"
-		financial-entry-route="{{ $enviroment == 'admin' ? URL::Route('addFinancialEntry',[$user_provider_type, $id]) : '' }}"
+		financial-entry-route="{{ $enviroment == 'admin' ? URL::Route('addFinancialEntry',[ 'type' => $user_provider_type, 'id' => intval($id)]) : '' }}"
 		ledger="{{ json_encode($ledger) }}"
 		withdrawals-report="{{ $withdrawals_report }}"
 		current-balance="{{ $current_balance }}"
@@ -94,7 +94,7 @@
 @stop
 
 @section('styles')
-<link rel="stylesheet" href="{{elixir('css/provider_financial.css')}}" />
+<link rel="stylesheet" href="{{asset('css/provider_financial.css')}}" />
 @stop
 
 @section('javascripts')
@@ -126,6 +126,6 @@
 @endswitch
 
 
-		<script src="{{ elixir('vendor/codificar/withdrawals/withdrawals.vue.js') }}"> </script> 
+		<script src="{{ asset('vendor/codificar/withdrawals/withdrawals.vue.js') }}"> </script> 
        
 @stop

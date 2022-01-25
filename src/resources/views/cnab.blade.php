@@ -42,5 +42,5 @@
 
 
 
-<script src="{{ elixir('vendor/codificar/withdrawals/withdrawals.vue.js') }}"> </script>
+<script src="{{ asset('vendor/codificar/withdrawals/withdrawals.vue.js') }}"> </script>
 @stop
