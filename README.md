@@ -1,20 +1,18 @@
 # laravel-withdrawals
+
 A withdrawals library for laravel.
 Uma bibliotéca de saques feita em laravel
 
 ## Prerequisites
-- 1º: Add the "quilhasoft/opencnabphp" library before install this library.
-```
-"quilhasoft/opencnabphp": "dev-master",
-```
-- 2º: These middwares are needed:
+
+- These middwares are needed:
 - If your project does not have some of these middleware, it is necessary to add them.
 ```
 auth.admin
 auth.provider
 auth.provider_api:api
 ```
-- 3º: The following tables are required. The columns are the same as in the UBER CLONE project:
+- The following tables are required. The columns are the same as in the UBER CLONE project:
 ```
 Provider
 Settings
@@ -25,57 +23,52 @@ LedgerBankAccount
 ```
 
 ## Getting Started
-- In root of your Laravel app in the composer.json add this code to clone the project:
 
-```
 
+Add in composer.json:
+
+```php
 "repositories": [
-		{
-			"type":"package",
-			"package": {
-			  "name": "codificar/withdrawals",
-			  "version":"master",
-			  "source": {
-				  "url": "https://libs:ofImhksJ@git.codificar.com.br/laravel-libs/laravel-withdrawals.git",
-				  "type": "git",
-				  "reference":"master"
-				}
-			}
-		}
-	],
-
-// ...
-
-"require": {
-    // ADD this
-    "codificar/withdrawals": "dev-master",
-},
-
-```
-- If you want add a specific version (commit, tag or branch), so add like this:
-```
-"codificar/withdrawals": "dev-master#version",
-```
-- Now add 
+    {
+        "type": "vcs",
+        "url": "https://libs:ofImhksJ@git.codificar.com.br/laravel-libs/laravel-withdrawals.git"
+    }
+]
 ```
 
+```php
+require:{
+        "codificar/withdrawals": "0.1.0",
+}
+```
+
+```php
 "autoload": {
-        //...
-        "psr-4": {
-            // Add your Lib here
-            "Codificar\\Withdrawals\\": "vendor/codificar/withdrawals/src",
-            //...
-        }
-    },
-    //...
+    "psr-4": {
+        "Codificar\\Withdrawals\\": "vendor/codificar/withdrawals/src/"
+    }
+}
 ```
-- Dump the composer autoloader
+Update project dependencies:
 
+```shell
+$ composer update
 ```
-composer dump-autoload -o
+
+Register the service provider in `config/app.php`:
+
+```php
+'providers' => [
+  /*
+   * Package Service Providers...
+   */
+  Codificar\Withdrawals\WithdrawalsServiceProvider::class,
+],
 ```
+
 
 Check if has the laravel publishes in composer.json with public_vuejs_libs tag:
+
 ```
     "scripts": {
         //...
@@ -85,26 +78,21 @@ Check if has the laravel publishes in composer.json with public_vuejs_libs tag:
 	},
 ```
 
-- Next, we need to add our new Service Provider in our `config/app.php` inside the `providers` array:
+Or publish by yourself
 
+
+Publish Js Libs and Tests:
+
+```shell
+$ php artisan vendor:publish --tag=public_vuejs_libs --force
 ```
-'providers' => [
-         ...,
-            // The new package class
-            Codificar\Withdrawals\WithdrawalsServiceProvider::class,
-        ],
-```
+
 - Migrate the database tables
 
-```
+```shell
 php artisan migrate
 ```
 
-And finally, start the application by running:
-
-```
-php artisan serve
-```
 
 ## Admin Routes
 | Type  | Return | Route  | Description |
