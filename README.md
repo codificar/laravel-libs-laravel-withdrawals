@@ -38,7 +38,7 @@ Add in composer.json:
 
 ```php
 require:{
-        "codificar/withdrawals": "0.1.0",
+        "codificar/withdrawals": "0.1.1",
 }
 ```
 
