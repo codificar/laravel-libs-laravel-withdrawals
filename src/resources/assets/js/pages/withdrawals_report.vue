@@ -157,6 +157,8 @@ export default {
 			//set the current modal associed id
 			this.current_modal_id = currentId;
 
+			console.log('inferno',this.current_modal_id);
+
 			//open modal
 			$("#modalConfirmWithdraw").modal("show");
 		},
@@ -173,7 +175,7 @@ export default {
 			console.log(this.$refs.myFiles.files);
 			this.fileWithdraw = this.$refs.myFiles.files[0];
 		},
-		confirmWithdraw(id) {
+		confirmWithdraw() {
 			console.log("id: ", this.current_modal_id);
 			console.log("img: ", this.fileWithdraw);
 			console.log("date: ", this.confirm_withdraw_date);
@@ -465,7 +467,7 @@ export default {
 											
 											<br>
 
-											<button type="button" v-on:click="confirmWithdraw(this.current_modal_id)" class="btn btn-success right">Enviar</button>
+											<button type="button" v-on:click="confirmWithdraw()" class="btn btn-success right">Enviar</button>
 											
 										</form>
 									</div>

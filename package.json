@@ -13,8 +13,10 @@
     "axios": "^0.18.0",
     "bootstrap": "^4.0.0",
     "jquery": "^3.2",
+    "laravel-mix": "^6.0.6",
     "vue": "^2.5.17",
-    "laravel-mix": "^6.0.6"
+    "vue-loader": "^15.9.7",
+    "vue-template-compiler": "^2.6.14"
   },
   "dependencies": {
     "axios": "^0.18.0",
@@ -22,6 +24,7 @@
     "lodash": "^4.17.10",
     "lodash.clonedeep": "^4.5.0",
     "lodash.omit": "^4.5.0",
+    "moment": "^2.29.1",
     "vue-element-loading": "^1.1.5",
     "vue-input-tag": "^2.0.7",
     "vue-js-toggle-button": "^1.2.3",
