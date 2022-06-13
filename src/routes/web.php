@@ -55,6 +55,15 @@ Route::group(array('namespace' => 'Codificar\Withdrawals\Http\Controllers'), fun
         Route::post('/settings', 'WithdrawalsController@getWithdrawSettings');
     });
 
+    Route::group(['prefix' => 'libs/withdrawals/user', 'middleware' => 'auth.user_api:api'], function () {
+
+        Route::post('/report', 'WithdrawalsController@getWithdrawalsUserReport');
+    
+        Route::post('/add', 'WithdrawalsController@addUserWithDraw');
+
+        Route::post('/settings', 'WithdrawalsController@getWithdrawUserSettings');
+    });
+
 });
 
 /**
@@ -79,4 +88,4 @@ Route::get('/libs/withdrawals/lang.trans/{file}', function () {
     return response('window.lang = ' . json_encode($strings) . ';')
             ->header('Content-Type', 'text/javascript');
             
-});
+})->name('assets.lang');

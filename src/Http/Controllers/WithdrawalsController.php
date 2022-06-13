@@ -31,9 +31,11 @@ use Codificar\Withdrawals\Http\Resources\RejectWithdrawResource;
 //Gerar arquivo de remessa CNAB
 use \CnabPHP\Remessa;
 use \CnabPHP\Retorno;
-
+use Codificar\Withdrawals\Http\Requests\UserAddWithdrawalFormRequest;
+use Codificar\Withdrawals\Http\Resources\UserAddWithdrawalResource;
 use Input, Validator, View, Response;
 use Provider, Settings, Ledger, Finance, Bank, LedgerBankAccount;
+use User;
 
 class WithdrawalsController extends Controller {
 
@@ -44,6 +46,19 @@ class WithdrawalsController extends Controller {
         $provider = Provider::find($providerId);
         
         $withdrawals_report = Withdrawals::getWithdrawals(false, "provider", $provider->ledger->id);
+        // Return data
+		return new ProviderWithdrawalsReportResource([
+            'withdrawals_report' => $withdrawals_report
+		]);
+    }
+
+    public function getWithdrawalsUserReport()
+    {
+        // Get the provider id (some projects is 'provider_id' and others is just 'id')
+        $userId = Input::get('user_id') ? Input::get('user_id') : Input::get('id');
+        $user = User::find($userId);
+        
+        $withdrawals_report = Withdrawals::getWithdrawals(false, "user", $user->ledger->id);
         // Return data
 		return new ProviderWithdrawalsReportResource([
             'withdrawals_report' => $withdrawals_report
@@ -78,6 +93,34 @@ class WithdrawalsController extends Controller {
 
     }
 
+    public function addUserWithDraw(UserAddWithdrawalFormRequest $request)
+    {
+        // Get the params
+        $userId = $request->get('user_id');
+        $value = $request->get('withdraw_value');
+        $bankAccountId = $request->get('bank_account_id');
+
+        // Get the ledger
+        $ledger = Ledger::findByUserId($userId);
+        
+        // Get the current balance from ledger. 
+        $currentBalance = Finance::sumValueByLedgerId($ledger->id);
+
+        // Get the settings of withdraw
+        $withDrawSettings = Withdrawals::getWithdrawalsSettings(false);
+        
+
+        // Return data
+		return new UserAddWithdrawalResource([
+            'ledger'            => $ledger,
+            'withdraw_value'    => $value,
+            'bank_account_id'   => $bankAccountId,
+            'current_balance'   => $currentBalance,
+            'withdraw_settings' => $withDrawSettings
+		]);
+
+    }
+
     public function getWithdrawSettings()
     {
 
@@ -91,6 +134,28 @@ class WithdrawalsController extends Controller {
         $currentBalance = currency_format(Finance::sumValueByLedgerId($provider->ledger->id));
         // Get the current balance from ledger. 
         $providerBanks = Withdrawals::getledgerBankAccount($provider->ledger->id);
+
+        // Return data
+		return new getWithdrawSettingsResource([
+            'withdraw_settings' => $withDrawSettings,
+            'current_balance'   => $currentBalance,
+            'provider_banks'    => $providerBanks
+		]);
+
+    }
+
+    public function getWithdrawUserSettings()
+    {
+        // Get the provider id (some projects is 'provider_id' and others is just 'id')
+        $userId = Input::get('user_id') ? Input::get('user_id') : Input::get('id');
+        $user = User::find($userId);
+
+        $withDrawSettings = Withdrawals::getWithdrawalsSettings(true);
+
+        // Get the current balance from ledger. 
+        $currentBalance = currency_format(Finance::sumValueByLedgerId($user->ledger->id));
+        // Get the current balance from ledger. 
+        $providerBanks = Withdrawals::getledgerBankAccount($user->ledger->id);
 
         // Return data
 		return new getWithdrawSettingsResource([
