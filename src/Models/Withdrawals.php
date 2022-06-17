@@ -268,11 +268,12 @@ class Withdrawals extends Eloquent
      */
     public static function getWithdrawals($hasPaginate, $enviroment, $ledgerId = null, $status_filter = null, $receipt_filter = null)
     {
+        $addAdmin = '';
         $addSelect = 'provider.email as email';
         if($enviroment == 'user') {
             $addSelect = 'user.email as email';
         } else if($enviroment == 'admin') {
-            $addSelect = 'provider.email as provider_email, user.email as user_email';
+            $addAdmin = 'user.email as user_email';
         }
 
         $query = DB::table('withdraw')
@@ -294,7 +295,8 @@ class Withdrawals extends Eloquent
                 'ledger_bank_account.account as account',
                 'ledger_bank_account.account_digit as account_digit',
                 'bank.name as bank',
-                $addSelect
+                $addSelect,
+                $addAdmin
             )
             ->join('finance', 'finance.id', '=', 'withdraw.finance_withdraw_id')
             ->join('ledger_bank_account', 'finance.ledger_bank_account_id', 'ledger_bank_account.id')
