@@ -268,6 +268,14 @@ class Withdrawals extends Eloquent
      */
     public static function getWithdrawals($hasPaginate, $enviroment, $ledgerId = null, $status_filter = null, $receipt_filter = null)
     {
+        $addAdmin = '';
+        $addSelect = 'provider.email as email';
+        if($enviroment == 'user') {
+            $addSelect = 'user.email as email';
+        } else if($enviroment == 'admin') {
+            $addAdmin = 'user.email as user_email';
+        }
+
         $query = DB::table('withdraw')
             ->select(
                 'withdraw.id as id',
@@ -287,17 +295,27 @@ class Withdrawals extends Eloquent
                 'ledger_bank_account.account as account',
                 'ledger_bank_account.account_digit as account_digit',
                 'bank.name as bank',
-                'provider.email as email'
+                $addSelect,
+                $addAdmin
             )
             ->join('finance', 'finance.id', '=', 'withdraw.finance_withdraw_id')
             ->join('ledger_bank_account', 'finance.ledger_bank_account_id', 'ledger_bank_account.id')
             ->join('ledger', 'finance.ledger_id', '=', 'ledger.id')
-            ->join('bank', 'ledger_bank_account.bank_id', 'bank.id')
-            ->join('provider', 'ledger.provider_id', '=', 'provider.id')
-            ->where('finance.reason', '=', 'WITHDRAW')
+            ->join('bank', 'ledger_bank_account.bank_id', 'bank.id');
+
+            if($enviroment == 'user') {
+                $query->join('user', 'ledger.user_id', '=', 'user.id');
+            } else if($enviroment == 'provider') {
+                $query->join('provider', 'ledger.provider_id', '=', 'provider.id');
+            } else if($enviroment == 'admin') {
+                $query->leftjoin('user', 'ledger.user_id', '=', 'user.id')
+                    ->leftjoin('provider', 'ledger.provider_id', '=', 'provider.id');
+            }
+
+            $query->where('finance.reason', '=', 'WITHDRAW')
             
             //if is provider, so just get the withdraw that provider
-            ->when($enviroment == "provider", function ($query, $model) use ($ledgerId) {
+            ->when($enviroment == "provider" || $enviroment == "user" , function ($query, $model) use ($ledgerId) {
                 $query->where('finance.ledger_id', '=', $ledgerId);
             })
             
