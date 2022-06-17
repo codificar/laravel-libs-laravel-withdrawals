@@ -384,7 +384,9 @@ export default {
 							<tr v-for="entry in withdrawals_report.data" v-bind:key="entry.id" total=0>
 								<td>{{ entry.id }}</td>
                                 <td>{{ entry.name }}</td>
-                                <td>{{ entry.email }}</td>
+                                <td v-if="entry.email">{{ entry.email }}</td>
+                                <td v-if="entry.user_email">{{ entry.user_email }}</td>
+                                <td v-if="entry.provider_email">{{ entry.provider_email }}</td>
                                 <td>{{ entry.bank }}</td>
                                 <td>{{ entry.agency + "-" + entry.agency_digit }}</td>
                                 <td>{{ entry.account + "-" + entry.account_digit }}</td>

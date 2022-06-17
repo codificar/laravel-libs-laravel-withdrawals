@@ -271,6 +271,8 @@ class Withdrawals extends Eloquent
         $addSelect = 'provider.email as email';
         if($enviroment == 'user') {
             $addSelect = 'user.email as email';
+        } else if($enviroment == 'admin') {
+            $addSelect = 'provider.email as provider_email, user.email as user_email';
         }
 
         $query = DB::table('withdraw')
@@ -301,8 +303,11 @@ class Withdrawals extends Eloquent
 
             if($enviroment == 'user') {
                 $query->join('user', 'ledger.user_id', '=', 'user.id');
-            } else {
+            } else if($enviroment == 'provider') {
                 $query->join('provider', 'ledger.provider_id', '=', 'provider.id');
+            } else if($enviroment == 'admin') {
+                $query->leftjoin('user', 'ledger.user_id', '=', 'user.id')
+                    ->leftjoin('provider', 'ledger.provider_id', '=', 'provider.id');
             }
 
             $query->where('finance.reason', '=', 'WITHDRAW')
