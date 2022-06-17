@@ -263,6 +263,7 @@ export default {
 		this.banks = JSON.parse(this.BankList); // Banks list
 		this.account_types = JSON.parse(this.AccountTypes); // Account types list
 		this.with_draw_settings = JSON.parse(this.WithDrawSettings); // System withdraw configs
+		console.log('created: ', this.withdrawals_report.data);
 	}
 };
 </script>
@@ -385,8 +386,9 @@ export default {
 								<td>{{ entry.id }}</td>
                                 <td>{{ entry.name }}</td>
                                 <td v-if="entry.email">{{ entry.email }}</td>
-                                <td v-if="entry.user_email">{{ entry.user_email }}</td>
-                                <td v-if="entry.provider_email">{{ entry.provider_email }}</td>
+                                <td v-else-if="entry.user_email">{{ entry.user_email }}</td>
+                                <td v-else-if="entry.provider_email">{{ entry.provider_email }}</td>
+                                <td v-else>Email Não encontrado</td>
                                 <td>{{ entry.bank }}</td>
                                 <td>{{ entry.agency + "-" + entry.agency_digit }}</td>
                                 <td>{{ entry.account + "-" + entry.account_digit }}</td>
