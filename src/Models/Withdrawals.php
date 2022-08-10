@@ -293,9 +293,7 @@ class Withdrawals extends Eloquent
                 'ledger_bank_account.agency_digit as agency_digit',
                 'ledger_bank_account.account as account',
                 'ledger_bank_account.account_digit as account_digit',
-                'bank.name as bank',
-                'user.email as user_email',
-                'provider.email as email'
+                'bank.name as bank'
             )
             ->join('finance', 'finance.id', '=', 'withdraw.finance_withdraw_id')
             ->join('ledger_bank_account', 'finance.ledger_bank_account_id', 'ledger_bank_account.id')
@@ -303,12 +301,15 @@ class Withdrawals extends Eloquent
             ->join('bank', 'ledger_bank_account.bank_id', 'bank.id');
 
         if ($enviroment == 'user') {
-            $query->join('user', 'ledger.user_id', '=', 'user.id');
+            $query->addSelect('user.email as email')
+                ->join('user', 'ledger.user_id', '=', 'user.id');
         } elseif ($enviroment == 'provider') {
-            $query->join('provider', 'ledger.provider_id', '=', 'provider.id');
+            $query->addSelect('provider.email as email')
+                ->join('provider', 'ledger.provider_id', '=', 'provider.id');
         } elseif ($enviroment == 'admin') {
-            $query->leftjoin('user', 'ledger.user_id', '=', 'user.id')
-                    ->leftjoin('provider', 'ledger.provider_id', '=', 'provider.id');
+            $query->addSelect('user.email as user_email')
+                ->leftjoin('user', 'ledger.user_id', '=', 'user.id')
+                ->leftjoin('provider', 'ledger.provider_id', '=', 'provider.id');
         }
 
         $query->where('finance.reason', '=', 'WITHDRAW')
