@@ -7,13 +7,13 @@ use Illuminate\Http\Request;
 use Illuminate\Pagination\Paginator;
 use Carbon\Carbon;
 use Eloquent;
-use Finance, Ledger;
+use Finance;
+use Ledger;
 use DB;
 use LedgerBankAccount;
 
 class Withdrawals extends Eloquent
 {
-
     protected $table = 'withdraw';
 
     /**
@@ -26,7 +26,6 @@ class Withdrawals extends Eloquent
 
     public static function addWithdraw($finance_withdraw_id, $finance_withdraw_tax_id)
     {
-
         $withdrawalsSummary = Finance::select('finance.id as id', 'finance.value as formattedValue', 'finance.compensation_date as date', 'bank.name as bank', 'ledger_bank_account.account as bankAccount')
                                 ->join('ledger', 'finance.ledger_id', '=', 'ledger.id')
                                 ->join($enviroment, 'ledger.'.$enviroment.'_id', '=', $enviroment.'.id')
@@ -36,11 +35,12 @@ class Withdrawals extends Eloquent
                                 ->where('finance.reason', '=', 'WITHDRAW')
                                 ->orderBy('finance.id', 'desc')
                                 ->get();
-        
+
         return $withdrawalsSummary;
     }
 
-    public static function addWithdrawReceiptAndConfirm($id, $picture_url) {
+    public static function addWithdrawReceiptAndConfirm($id, $picture_url)
+    {
         DB::table('withdraw')
             ->where('id', '=', $id)
             ->update(
@@ -51,7 +51,8 @@ class Withdrawals extends Eloquent
             );
     }
 
-    public static function updateStatusAndFileAssociated($withdrawId, $fileAssociated) {
+    public static function updateStatusAndFileAssociated($withdrawId, $fileAssociated)
+    {
         DB::table('withdraw')
             ->where('id', '=', $withdrawId)
             ->update(
@@ -61,7 +62,8 @@ class Withdrawals extends Eloquent
                 ]
             );
     }
-    public static function updateCnabWithdrawStatus($withdrawId, $status, $error_msg = null) {
+    public static function updateCnabWithdrawStatus($withdrawId, $status, $error_msg = null)
+    {
         DB::table('withdraw')
             ->where('id', '=', $withdrawId)
             ->where('type', '=', 'awaiting_return')
@@ -73,8 +75,8 @@ class Withdrawals extends Eloquent
             );
     }
 
-    public static function getCnabSettings() {
-
+    public static function getCnabSettings()
+    {
         $keys = array(
             "rem_company_name",
             "rem_cpf_or_cnpj",
@@ -108,18 +110,21 @@ class Withdrawals extends Eloquent
 
 
 
-    public static function getSettingsKey($key){
-		$settings = DB::table('settings')->where('key', $key)->first();
+    public static function getSettingsKey($key)
+    {
+        $settings = DB::table('settings')->where('key', $key)->first();
 
-		if($settings)
-			return $settings->value;
-		else
-			return false ;
-	}
+        if ($settings) {
+            return $settings->value;
+        } else {
+            return false ;
+        }
+    }
 
 
-    public static function getWithdrawalsSettings($isFormattedValues = false) {
-        if($isFormattedValues) {
+    public static function getWithdrawalsSettings($isFormattedValues = false)
+    {
+        if ($isFormattedValues) {
             $query = array(
                 'with_draw_enabled' => Withdrawals::getSettingsKey('with_draw_enabled'),
                 'with_draw_max_limit' => currency_format(Withdrawals::getSettingsKey('with_draw_max_limit')),
@@ -134,7 +139,7 @@ class Withdrawals extends Eloquent
                 'with_draw_tax' => Withdrawals::getSettingsKey('with_draw_tax')
             );
         }
-        
+
 
         return $query;
     }
@@ -144,8 +149,8 @@ class Withdrawals extends Eloquent
     {
         $query = DB::table('withdraw')
             ->where('withdraw.type', '=', 'requested')
-            ->join('finance', 'finance.id', '=', 'withdraw.finance_withdraw_id')  
-            ->select( DB::raw('sum( finance.value ) as totalValue') )
+            ->join('finance', 'finance.id', '=', 'withdraw.finance_withdraw_id')
+            ->select(DB::raw('sum( finance.value ) as totalValue'))
             ->get();
         $total = -1 * $query[0]->totalValue;
         return $total;
@@ -155,8 +160,8 @@ class Withdrawals extends Eloquent
         $query = DB::table('withdraw')
             ->where('withdraw.type', '=', 'requested')
             ->whereIn('withdraw.id', $ids)
-            ->join('finance', 'finance.id', '=', 'withdraw.finance_withdraw_id')  
-            ->select( DB::raw('sum( finance.value ) as totalValue') )
+            ->join('finance', 'finance.id', '=', 'withdraw.finance_withdraw_id')
+            ->select(DB::raw('sum( finance.value ) as totalValue'))
             ->get();
         $total = -1 * $query[0]->totalValue;
         return $total;
@@ -165,8 +170,8 @@ class Withdrawals extends Eloquent
     {
         $query = DB::table('withdraw')
             ->where('withdraw.type', '=', 'awaiting_return')
-            ->join('finance', 'finance.id', '=', 'withdraw.finance_withdraw_id')  
-            ->select( DB::raw('sum( finance.value ) as totalValue') )
+            ->join('finance', 'finance.id', '=', 'withdraw.finance_withdraw_id')
+            ->select(DB::raw('sum( finance.value ) as totalValue'))
             ->get();
         $total = -1 * $query[0]->totalValue;
         return $total;
@@ -175,8 +180,8 @@ class Withdrawals extends Eloquent
     {
         $query = DB::table('withdraw')
             ->where('withdraw.type', '=', 'error')
-            ->join('finance', 'finance.id', '=', 'withdraw.finance_withdraw_id')  
-            ->select( DB::raw('sum( finance.value ) as totalValue') )
+            ->join('finance', 'finance.id', '=', 'withdraw.finance_withdraw_id')
+            ->select(DB::raw('sum( finance.value ) as totalValue'))
             ->get();
         $total = -1 * $query[0]->totalValue;
         return $total;
@@ -187,12 +192,12 @@ class Withdrawals extends Eloquent
     {
         $query = DB::table('withdraw')
             ->select(
-                'withdraw.*', 
-                'withdraw.id as id', 
-                'finance.value as totalValue', 
+                'withdraw.*',
+                'withdraw.id as id',
+                'finance.value as totalValue',
                 'bank.name as bank',
-                'bank.code as bank_code', 
-                'ledger_bank_account.account as account', 
+                'bank.code as bank_code',
+                'ledger_bank_account.account as account',
                 'ledger_bank_account.account_digit as account_digit',
                 'ledger_bank_account.agency as agency',
                 'ledger_bank_account.agency_digit as agency_digit',
@@ -216,27 +221,29 @@ class Withdrawals extends Eloquent
             ->join('provider', 'ledger.provider_id', 'provider.id')
             ->get();
 
-        foreach($query as $totalValue) {
+        foreach ($query as $totalValue) {
             $totalValue->totalValue *= -1;
         }
         return $query;
     }
 
 
-    public static function updateWithdrawWhenDeleteCnab($cnab_id) {
-        
+    public static function updateWithdrawWhenDeleteCnab($cnab_id)
+    {
+
         //Atualiza o status que estao 'aguardando o retorno' desse arquivo, para 'solicitado'
         DB::table('withdraw')
             ->where('cnab_file_id', '=', $cnab_id)
             ->where('type', '=', 'awaiting_return')
             ->update(['type' => 'requested']);
 
-        
+
         //Remove a associacao do arquivo de remessa com o saque (independentemente do status)
         DB::table('withdraw')
             ->where('cnab_file_id', '=', $cnab_id)
-            ->update(['cnab_file_id' => null]
-        );
+            ->update(
+                ['cnab_file_id' => null]
+            );
     }
 
 
@@ -244,8 +251,8 @@ class Withdrawals extends Eloquent
     {
         $query = DB::table('ledger_bank_account')
             ->select(
-                'ledger_bank_account.id as id', 
-                'ledger_bank_account.account as account', 
+                'ledger_bank_account.id as id',
+                'ledger_bank_account.account as account',
                 'bank.name as bank'
             )
             ->where('ledger_bank_account.ledger_id', '=', $ledgerId)
@@ -264,16 +271,16 @@ class Withdrawals extends Eloquent
      * @param String        $status_filter      status_filter is a string, need be equal the type column on withdraw table
      * @param Number        $receipt_filter     receipt_filter is a number, if is 2 so get the withdraw with receipt. If 1, get withdraw withou receipt. If other value, get all withdraw
      *
-     * @return Array        $withdrawals_report     
+     * @return Array        $withdrawals_report
      */
     public static function getWithdrawals($hasPaginate, $enviroment, $ledgerId = null, $status_filter = null, $receipt_filter = null)
     {
-        $addAdmin = '';
-        $addSelect = 'provider.email as email';
-        if($enviroment == 'user') {
+        if ($enviroment == 'user') {
             $addSelect = 'user.email as email';
-        } else if($enviroment == 'admin') {
-            $addAdmin = 'user.email as user_email';
+        } elseif ($enviroment == 'provider') {
+            $addSelect = 'provider.email as email';
+        } elseif ($enviroment == 'admin') {
+            $addSelect = 'user.email as user_email';
         }
 
         $query = DB::table('withdraw')
@@ -295,52 +302,51 @@ class Withdrawals extends Eloquent
                 'ledger_bank_account.account as account',
                 'ledger_bank_account.account_digit as account_digit',
                 'bank.name as bank',
-                $addSelect,
-                $addAdmin
+                $addSelect
             )
             ->join('finance', 'finance.id', '=', 'withdraw.finance_withdraw_id')
             ->join('ledger_bank_account', 'finance.ledger_bank_account_id', 'ledger_bank_account.id')
             ->join('ledger', 'finance.ledger_id', '=', 'ledger.id')
             ->join('bank', 'ledger_bank_account.bank_id', 'bank.id');
 
-            if($enviroment == 'user') {
-                $query->join('user', 'ledger.user_id', '=', 'user.id');
-            } else if($enviroment == 'provider') {
-                $query->join('provider', 'ledger.provider_id', '=', 'provider.id');
-            } else if($enviroment == 'admin') {
-                $query->leftjoin('user', 'ledger.user_id', '=', 'user.id')
+        if ($enviroment == 'user') {
+            $query->join('user', 'ledger.user_id', '=', 'user.id');
+        } elseif ($enviroment == 'provider') {
+            $query->join('provider', 'ledger.provider_id', '=', 'provider.id');
+        } elseif ($enviroment == 'admin') {
+            $query->leftjoin('user', 'ledger.user_id', '=', 'user.id')
                     ->leftjoin('provider', 'ledger.provider_id', '=', 'provider.id');
-            }
+        }
 
-            $query->where('finance.reason', '=', 'WITHDRAW')
-            
+        $query->where('finance.reason', '=', 'WITHDRAW')
+
             //if is provider, so just get the withdraw that provider
-            ->when($enviroment == "provider" || $enviroment == "user" , function ($query, $model) use ($ledgerId) {
+            ->when($enviroment == "provider" || $enviroment == "user", function ($query, $model) use ($ledgerId) {
                 $query->where('finance.ledger_id', '=', $ledgerId);
             })
-            
-            //If has status 
+
+            //If has status
             ->when($status_filter, function ($query, $model) use ($status_filter) {
                 $query->where('withdraw.type', '=', $status_filter);
             })
 
             //If has receipt filter
             ->when($receipt_filter == 1 || $receipt_filter == 2, function ($query, $model) use ($receipt_filter) {
-                if($receipt_filter == 2) {
+                if ($receipt_filter == 2) {
                     $query->where('withdraw.bank_receipt_url', '!=', null);
-                } else if ($receipt_filter == 1) {
+                } elseif ($receipt_filter == 1) {
                     $query->where('withdraw.bank_receipt_url', '=', null);
                 }
             })
             ->orderBy('withdraw.id', 'DESC');
-            
-        if($hasPaginate) {
+
+        if ($hasPaginate) {
             $query = $query->paginate(10);
         } else {
             $query = $query->get();
         }
         //Converte o valor negativo para positivo
-        foreach($query as $withdraw) {
+        foreach ($query as $withdraw) {
             $withdraw->value = -1 * $withdraw->value;
             $withdraw->formattedValue = currency_format($withdraw->value);
             $withdraw->bankAccount = $withdraw->account . "-" . $withdraw->account_digit;
@@ -348,16 +354,17 @@ class Withdrawals extends Eloquent
         return $query;
     }
 
-    public static function checkIfWithdrawExists($withdrawId) {
-
+    public static function checkIfWithdrawExists($withdrawId)
+    {
         $query = DB::table('withdraw')
             ->where('id', '=', $withdrawId)
             ->first();
-        
+
         return $query ? true : false;
     }
 
-    public static function checkIfWithdrawBelongCnab($withdrawId, $cnab_file_id) {
+    public static function checkIfWithdrawBelongCnab($withdrawId, $cnab_file_id)
+    {
         $query = DB::table('withdraw')
             ->where('id', '=', $withdrawId)
             ->where('cnab_file_id', '=', $cnab_file_id)
@@ -365,26 +372,28 @@ class Withdrawals extends Eloquent
         return $query ? true : false;
     }
 
-	public static function updateWithdrawStatus($withdraw_id, $status) {
-		DB::table('withdraw')
-			->where('id', '=', $withdraw_id)
-			->update(
-				[
-					'type' => $status,
-					'updated_at' => date('Y-m-d H:i:s')
-				]
-			);
-	}
+    public static function updateWithdrawStatus($withdraw_id, $status)
+    {
+        DB::table('withdraw')
+            ->where('id', '=', $withdraw_id)
+            ->update(
+                [
+                    'type' => $status,
+                    'updated_at' => date('Y-m-d H:i:s')
+                ]
+            );
+    }
 
-	public static function getSelectedProviderDataToCreateCnab($ids) {
-		$query = DB::table('withdraw')
+    public static function getSelectedProviderDataToCreateCnab($ids)
+    {
+        $query = DB::table('withdraw')
             ->select(
-                'withdraw.*', 
-                'withdraw.id as id', 
-                'finance.value as totalValue', 
+                'withdraw.*',
+                'withdraw.id as id',
+                'finance.value as totalValue',
                 'bank.name as bank',
-                'bank.code as bank_code', 
-                'ledger_bank_account.account as account', 
+                'bank.code as bank_code',
+                'ledger_bank_account.account as account',
                 'ledger_bank_account.account_digit as account_digit',
                 'ledger_bank_account.agency as agency',
                 'ledger_bank_account.agency_digit as agency_digit',
@@ -400,7 +409,7 @@ class Withdrawals extends Eloquent
                 'provider.state as state'
             )
             ->where('withdraw.type', '=', 'requested')
-			->whereIn('withdraw.id', $ids)
+            ->whereIn('withdraw.id', $ids)
             ->orderBy('withdraw.id', 'ASC')
             ->join('finance', 'finance.id', '=', 'withdraw.finance_withdraw_id')
             ->join('ledger', 'finance.ledger_id', '=', 'ledger.id')
@@ -409,39 +418,41 @@ class Withdrawals extends Eloquent
             ->join('provider', 'ledger.provider_id', 'provider.id')
             ->get();
 
-        foreach($query as $totalValue) {
+        foreach ($query as $totalValue) {
             $totalValue->totalValue *= -1;
         }
         return $query;
-	}
+    }
 
-	public static function rejectWithdraw($id) {
-		$withdraw = self::find($id);
+    public static function rejectWithdraw($id)
+    {
+        $withdraw = self::find($id);
 
-		$finance_withdraw		= Finance::find($withdraw->finance_withdraw_id);
-		$finance_withdraw_tax	= Finance::find($withdraw->finance_withdraw_tax_id);
-		$bank_account			= LedgerBankAccount::where('ledger_id', $finance_withdraw->ledger_id)->first();
+        $finance_withdraw		= Finance::find($withdraw->finance_withdraw_id);
+        $finance_withdraw_tax	= Finance::find($withdraw->finance_withdraw_tax_id);
+        $bank_account			= LedgerBankAccount::where('ledger_id', $finance_withdraw->ledger_id)->first();
 
-		$finance_withdraw_id		= $withdraw->finance_withdraw_id;
-		$finance_withdraw_tax_id	= $withdraw->finance_withdraw_tax_id;
+        $finance_withdraw_id		= $withdraw->finance_withdraw_id;
+        $finance_withdraw_tax_id	= $withdraw->finance_withdraw_tax_id;
 
-		$withdraw->finance_withdraw_id = Finance::createWithDrawRequest(
-			$finance_withdraw->ledger_id, 
-			$finance_withdraw->value * -1, 
-			$bank_account->id, 
-			\Auth::id()
-		)->id;
-        
-        if($finance_withdraw_tax)
-		$withdraw->finance_withdraw_tax_id = Finance::createWithDrawRequest(
-			$finance_withdraw_tax->ledger_id, 
-			$finance_withdraw_tax->value * -1, 
-			$bank_account->id, 
-			\Auth::id()
-		)->id;
+        $withdraw->finance_withdraw_id = Finance::createWithDrawRequest(
+            $finance_withdraw->ledger_id,
+            $finance_withdraw->value * -1,
+            $bank_account->id,
+            \Auth::id()
+        )->id;
 
-		$withdraw->save();
+        if ($finance_withdraw_tax) {
+            $withdraw->finance_withdraw_tax_id = Finance::createWithDrawRequest(
+                $finance_withdraw_tax->ledger_id,
+                $finance_withdraw_tax->value * -1,
+                $bank_account->id,
+                \Auth::id()
+            )->id;
+        }
 
-		Finance::destroy([$finance_withdraw_id, $finance_withdraw_tax_id]);
-	}
+        $withdraw->save();
+
+        Finance::destroy([$finance_withdraw_id, $finance_withdraw_tax_id]);
+    }
 }
