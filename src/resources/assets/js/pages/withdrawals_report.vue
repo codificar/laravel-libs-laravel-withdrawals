@@ -157,8 +157,6 @@ export default {
 			//set the current modal associed id
 			this.current_modal_id = currentId;
 
-			console.log('inferno',this.current_modal_id);
-
 			//open modal
 			$("#modalConfirmWithdraw").modal("show");
 		},
@@ -220,7 +218,6 @@ export default {
 					'Content-Type': 'multipart/form-data'
 				}
 			}).then(response => {
-				console.log('dados:', response);
 				$('#modalRejectWithdraw').modal('hide');
 
 				if (response.data.success) {
@@ -493,7 +490,7 @@ export default {
 										<form id="modalForm">
 											<label for="confirm_withdraw_picture">Você tem certeza que deseja rejeitar essa solicitação de saque?</label>
 											<br>
-											<button type="button" v-on:click="rejectWithdraw(this.current_modal_id)" class="btn btn-success right">Enviar</button>											
+											<button type="button" v-on:click="rejectWithdraw()" class="btn btn-success right">Enviar</button>											
 										</form>
 									</div>
 									
