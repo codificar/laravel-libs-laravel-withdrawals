@@ -37,6 +37,7 @@ return array(
 
 	'error'							=> 'Ocorreu um erro',
 	'success_confirm_withdrawals'	=> 'Baixa do saque confirmada.',
+	'success_refuse_withdrawals'	=> 'Rejeição do saque confirmada.',
 
 
 	'value'							=> 'Valor',
