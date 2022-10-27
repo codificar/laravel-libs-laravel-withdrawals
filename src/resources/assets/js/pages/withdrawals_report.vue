@@ -221,7 +221,7 @@ export default {
 				$('#modalRejectWithdraw').modal('hide');
 
 				if (response.data.success) {
-					this.reloadPageWithMessage(this.trans("withdrawals.success_confirm_withdrawals"));
+					this.reloadPageWithMessage(this.trans("withdrawals.success_refuse_withdrawals"));
 				} else {
 					this.showErrorMsg(response.data.errors);
 				}
