@@ -302,7 +302,12 @@ export default {
                                                 <div class="form-group">
                                                     <!--Select transaction type filter-->
                                                     <label for="giveName">{{trans('withdrawals.status') }}</label>
-                                                    <select v-model="status" name="" class="select form-control">
+                                                  <select
+                                                      v-model="status"
+                                                      name=""
+                                                      class="select form-control"
+                                                      data-test="select_status"
+                                                  >
 														<option value="0" selected="selected"></option>
                                                         <option value="requested">{{trans('withdrawals.withdrawal_requested') }}</option>
 														<option value="awaiting_return">{{trans('withdrawals.awaiting_return') }}</option>
@@ -336,7 +341,13 @@ export default {
 										</div>
 
                                         <div v-if="Enviroment != 'admin'">
-                                            <button v-show="with_draw_settings.with_draw_enabled == true" v-on:click="showModalRequestWithdraw" class="btn btn-info" type="button">
+                                            <button
+                                                v-show="with_draw_settings.with_draw_enabled == true"
+                                                v-on:click="showModalRequestWithdraw"
+                                                class="btn btn-info"
+                                                type="button"
+                                                data-test="insert_transaction"
+                                            >
                                                 <i class="fa fa-money"></i> {{ trans('withdrawals.request_withdraw') }}
                                             </button>
                                             <div>
@@ -359,8 +370,8 @@ export default {
 		</div>
 		<div class="col-lg-12" v-if="!isEmpty(withdrawals_report.data)">
 			<div class="card">
-				<div class="card-block">
-					<div class="card-block">
+				<div class="card-block table_wrapper">
+					<div class="card-block table_scroll">
 						<table class="table table-bordered">
 							<tr>
                                 <th>{{ trans("withdrawals.id") }}</th>
@@ -422,13 +433,15 @@ export default {
 											 	class="dropdown-item" 
 												style="cursor: pointer;" 
 												v-on:click="showModalConfirmWithdraw(entry.id)"
-											>
+                        data-test="confirm_withdraw"
+                      >
 												{{ trans('withdrawals.confirm') }}
 											</a>
 											<a											 	 
 											 	class="dropdown-item" 
 												style="cursor: pointer;" 
 												v-on:click="showModalRejectWithdraw(entry.id)"
+                        data-test="reject_withdraw"
 											>
 												{{ trans('withdrawals.reject') }}
 											</a>
@@ -468,7 +481,14 @@ export default {
 											
 											<br>
 
-											<button type="button" v-on:click="confirmWithdraw()" class="btn btn-success right">Enviar</button>
+                      <button
+                          type="button"
+                          v-on:click="confirmWithdraw()"
+                          class="btn btn-success right"
+                          data-test="modal_confirm_button_send"
+                      >
+                        Enviar
+                      </button>
 											
 										</form>
 									</div>
@@ -490,7 +510,7 @@ export default {
 										<form id="modalForm">
 											<label for="confirm_withdraw_picture">Você tem certeza que deseja rejeitar essa solicitação de saque?</label>
 											<br>
-											<button type="button" v-on:click="rejectWithdraw()" class="btn btn-success right">Enviar</button>											
+											<button type="button" v-on:click="rejectWithdraw()" class="btn btn-success right">Enviar</button>
 										</form>
 									</div>
 									
@@ -527,3 +547,15 @@ export default {
 		</div>
 	</div>
 </template>
+
+
+<style lang="scss" scoped>
+
+.table_wrapper table {
+  width: 100%;
+}
+
+.table_scroll {
+  overflow: auto;
+}
+</style>
