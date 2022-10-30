@@ -359,8 +359,8 @@ export default {
 		</div>
 		<div class="col-lg-12" v-if="!isEmpty(withdrawals_report.data)">
 			<div class="card">
-				<div class="card-block">
-					<div class="card-block">
+				<div class="card-block table_wrapper">
+					<div class="card-block table_scroll">
 						<table class="table table-bordered">
 							<tr>
                                 <th>{{ trans("withdrawals.id") }}</th>
@@ -527,3 +527,15 @@ export default {
 		</div>
 	</div>
 </template>
+
+
+<style lang="scss" scoped>
+
+.table_wrapper table {
+  width: 100%;
+}
+
+.table_scroll {
+  overflow: auto;
+}
+</style>
