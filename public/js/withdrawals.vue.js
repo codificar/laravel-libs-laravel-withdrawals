@@ -4636,7 +4636,8 @@ var render = function render() {
     }],
     staticClass: "select form-control",
     attrs: {
-      name: ""
+      name: "",
+      "data-test": "select_status"
     },
     on: {
       change: function change($event) {
@@ -4749,7 +4750,8 @@ var render = function render() {
     }],
     staticClass: "btn btn-info",
     attrs: {
-      type: "button"
+      type: "button",
+      "data-test": "insert_transaction"
     },
     on: {
       click: _vm.showModalRequestWithdraw
@@ -4817,6 +4819,9 @@ var render = function render() {
       staticStyle: {
         cursor: "pointer"
       },
+      attrs: {
+        "data-test": "confirm_withdraw"
+      },
       on: {
         click: function click($event) {
           return _vm.showModalConfirmWithdraw(entry.id);
@@ -4826,6 +4831,9 @@ var render = function render() {
       staticClass: "dropdown-item",
       staticStyle: {
         cursor: "pointer"
+      },
+      attrs: {
+        "data-test": "reject_withdraw"
       },
       on: {
         click: function click($event) {
@@ -4896,14 +4904,15 @@ var render = function render() {
   }), _vm._v(" "), _c("br"), _vm._v(" "), _c("button", {
     staticClass: "btn btn-success right",
     attrs: {
-      type: "button"
+      type: "button",
+      "data-test": "modal_confirm_button_send"
     },
     on: {
       click: function click($event) {
         return _vm.confirmWithdraw();
       }
     }
-  }, [_vm._v("Enviar")])])])])])]) : _vm._e(), _vm._v(" "), _vm.Enviroment == "admin" ? _c("div", {
+  }, [_vm._v("\n                        Enviar\n                      ")])])])])])]) : _vm._e(), _vm._v(" "), _vm.Enviroment == "admin" ? _c("div", {
     staticClass: "modal",
     attrs: {
       id: "modalRejectWithdraw",
