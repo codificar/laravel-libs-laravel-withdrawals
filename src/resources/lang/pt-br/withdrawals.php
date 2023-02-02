@@ -37,7 +37,6 @@ return array(
 
 	'error'							=> 'Ocorreu um erro',
 	'success_confirm_withdrawals'	=> 'Baixa do saque confirmada.',
-	'success_refuse_withdrawals'	=> 'Rejeição do saque confirmada.',
 
 
 	'value'							=> 'Valor',
@@ -54,6 +53,11 @@ return array(
 	'search'						=> 'Pesquisar',
 	'name'							=> 'Nome',
 	'email'							=> 'Email',
+
+	'pix'							=> 'PIX',
+	'type_pix'                      => 'Tipo de chave',
+	'key_pix'                       => 'Chave PIX',
+	
 	'cpf'							=> 'Cpf',
 	'status'						=> 'Status',
 	'receipt'						=> 'Comprovante',
