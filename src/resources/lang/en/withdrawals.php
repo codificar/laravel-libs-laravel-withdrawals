@@ -53,6 +53,21 @@ return array(
 	'search'						=> 'Search',
 	'name'							=> 'Name',
 	'email'							=> 'Email',
+
+	'pix'							=> 'PIX',
+	'type_pix'                      => 'Key type',
+	'key_pix'                       => 'PIX key',
+	'email_not_found'               => 'Email not found',
+	'see_error'						=> 'Visualize error',
+	'to_view'						=> 'View',
+	'drop_the_withdrawal'			=> 'Drop the withdrawal',
+	'send_proof_of_transfer'		=> 'Send proof of transfer',
+	'transfer_date'					=> 'Transfer date:',
+	'reject_withdrawal'				=> 'Reject withdrawal',
+	'confirm_withdraw_picture'		=> 'Are you sure you want to reject this withdrawal request?',
+	'reason_error_withdrawing'		=> 'Reason for error when withdrawing',
+
+
 	'cpf'							=> 'CPF',
 	'status'						=> 'Status',
 	'receipt'						=> 'Receipt',

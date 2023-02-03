@@ -392,7 +392,7 @@ export default {
                                 <td v-if="entry.email">{{ entry.email }}</td>
                                 <td v-else-if="entry.user_email">{{ entry.user_email }}</td>
                                 <td v-else-if="entry.provider_email">{{ entry.provider_email }}</td>
-                                <td v-else>Email Não encontrado</td>
+                                <td v-else>{{ trans("withdrawals.email_not_found") }}</td>
 
 								<td v-if="allowPixRegister == 1">{{ entry.type_pix }}</td>
                                 <td v-if="allowPixRegister == 1">{{ entry.key_pix }}</td>
@@ -411,7 +411,7 @@ export default {
 										style="cursor: pointer; color: red" 
 										v-on:click="showModalErrorMsg(entry.error_msg)"
 									>
-										Ver erro
+										{{trans ("withdrawals.see_error")}}
 									</a>
 								</td>
 
@@ -454,12 +454,12 @@ export default {
 							<div class="modal-dialog" role="document">
 								<div class="modal-content">
 									<div class="modal-header">
-										<h4 class="modal-title">Dar baixa no saque</h4>
+										<h4 class="modal-title">{{ trans('withdrawals.drop_the_withdrawal') }}</h4>
 										<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
 									</div>
 									<div class="modal-body">
 										<form id="modalForm">
-											<label for="confirm_withdraw_picture">Envie o comprovante de transferência</label>
+											<label for="confirm_withdraw_picture">{{ trans('withdrawals.send_proof_of_transfer') }}</label>
 											<input 
 												type="file" 
 												:id="'file'" 
@@ -471,12 +471,12 @@ export default {
 											
 											<br>
 											
-											<label for="withdraw_date">Data da transferência:</label>
+											<label for="withdraw_date">{{ trans('withdrawals.transfer_date') }}</label>
 											<input type="date" v-model="confirm_withdraw_date" id="withdraw_date" name="withdraw_date">
 											
 											<br>
 
-											<button type="button" v-on:click="confirmWithdraw()" class="btn btn-success right">Enviar</button>
+											<button type="button" v-on:click="confirmWithdraw()" class="btn btn-success right">{{ trans("withdrawals.send") }}</button>
 											
 										</form>
 									</div>
@@ -491,14 +491,14 @@ export default {
 							<div class="modal-dialog" role="document">
 								<div class="modal-content">
 									<div class="modal-header">
-										<h4 class="modal-title">Rejeitar saque</h4>
+										<h4 class="modal-title">{{ trans('withdrawals.reject_withdrawal') }}</h4>
 										<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
 									</div>
 									<div class="modal-body">
 										<form id="modalForm">
-											<label for="confirm_withdraw_picture">Você tem certeza que deseja rejeitar essa solicitação de saque?</label>
+											<label for="confirm_withdraw_picture">{{ trans('withdrawals.confirm_withdraw_picture') }}</label>
 											<br>
-											<button type="button" v-on:click="rejectWithdraw()" class="btn btn-success right">Enviar</button>											
+											<button type="button" v-on:click="rejectWithdraw()" class="btn btn-success right">{{ trans("withdrawals.send") }}</button>											
 										</form>
 									</div>
 									
@@ -512,7 +512,7 @@ export default {
 							<div class="modal-dialog" role="document">
 								<div class="modal-content">
 									<div class="modal-header">
-										<h4 class="modal-title">Motivo do Erro ao realizar saque</h4>
+										<h4 class="modal-title">{{ trans('withdrawals.confirm_withdraw_picture') }}</h4>
 										<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
 									</div>
 									<div class="modal-body">
