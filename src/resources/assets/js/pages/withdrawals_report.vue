@@ -394,8 +394,8 @@ export default {
                                 <td v-else-if="entry.provider_email">{{ entry.provider_email }}</td>
                                 <td v-else>Email Não encontrado</td>
 
-								<td>{{ entry.type_pix }}</td>
-                                <td>{{ entry.key_pix }}</td>
+								<td v-if="allowPixRegister == 1">{{ entry.type_pix }}</td>
+                                <td v-if="allowPixRegister == 1">{{ entry.key_pix }}</td>
 
                                 <td>{{ entry.bank }}</td>
                                 <td>{{ entry.agency + "-" + entry.agency_digit }}</td>
