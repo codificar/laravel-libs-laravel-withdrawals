@@ -304,10 +304,10 @@ class Withdrawals extends Eloquent
             $query->addSelect('user.email as email')
                 ->join('user', 'ledger.user_id', '=', 'user.id');
         } elseif ($enviroment == 'provider') {
-            $query->addSelect('provider.email as email')
+            $query->addSelect('provider.email as email', 'provider.type_pix as type_pix', 'provider.key_pix as key_pix')
                 ->join('provider', 'ledger.provider_id', '=', 'provider.id');
         } elseif ($enviroment == 'admin') {
-            $query->addSelect('user.email as user_email', 'provider.email as provider_email')
+            $query->addSelect('user.email as user_email', 'provider.email as provider_email', 'provider.type_pix as type_pix', 'provider.key_pix as key_pix')
                 ->leftjoin('user', 'ledger.user_id', '=', 'user.id')
                 ->leftjoin('provider', 'ledger.provider_id', '=', 'provider.id');
         }

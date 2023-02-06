@@ -73,7 +73,8 @@
 		bank-list="{{ json_encode($banks) }}"
 		account-types="{{ json_encode($account_types) }}"
 		with-draw-settings="{{ json_encode($withdrawsettings) }}"
-		currency-symbol="{{\Settings::getCurrency()}}">
+		currency-symbol="{{\Settings::getCurrency()}}"
+		allow-pix-register="{{Settings::getAllowPixRegister()}}">
 	</withdrawalsreport>
 	
 </div>

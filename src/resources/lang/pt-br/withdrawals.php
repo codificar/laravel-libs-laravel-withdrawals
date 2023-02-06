@@ -35,10 +35,10 @@ return array(
 	'success_set_withdrawals'		=> 'Configurações de saque CNAB salvas com sucesso.',
 	'failed_set_withdrawals'		=> 'Ocorreu um erro ao salvar',
 
+
 	'error'							=> 'Ocorreu um erro',
 	'success_confirm_withdrawals'	=> 'Baixa do saque confirmada.',
 	'success_refuse_withdrawals'	=> 'Rejeição do saque confirmada.',
-
 
 	'value'							=> 'Valor',
 	'value_required'				=> 'Você deve digitar um valor',
@@ -54,6 +54,21 @@ return array(
 	'search'						=> 'Pesquisar',
 	'name'							=> 'Nome',
 	'email'							=> 'Email',
+
+	'pix'							=> 'PIX',
+	'type_pix'                      => 'Tipo de chave',
+	'key_pix'                       => 'Chave PIX',
+	'email_not_found'               => 'Email não encontrado',
+	'see_error'						=> 'Ver erro',
+	'to_view'						=> 'Visualizar',
+	'drop_the_withdrawal'			=> 'Dar baixa no saque',
+	'send_proof_of_transfer'		=> 'Envie o comprovante de transferência',
+	'transfer_date'					=> 'Data de transferência:',
+	'reject_withdrawal'				=> 'Rejeitar Saque',
+	'confirm_withdraw_picture'		=> 'Você tem certeza que deseja rejeitar essa solicitação de saque?',
+	'reason_error_withdrawing'		=> 'Motivo do Erro ao realizar saque',
+
+
 	'cpf'							=> 'Cpf',
 	'status'						=> 'Status',
 	'receipt'						=> 'Comprovante',
@@ -115,7 +130,7 @@ return array(
 	
 	'holder_name_info'				=> 'Insira o nome do favorecido tal como informado pelo banco',
 
-	
+	'send'                          => 'Enviar',
 	'save'							=> 'Salvar Dados',
 	'cancel'						=> 'Cancelar',
 	'without'						=> 'sem',

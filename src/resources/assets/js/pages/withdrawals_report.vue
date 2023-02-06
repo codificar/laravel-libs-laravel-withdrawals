@@ -20,7 +20,9 @@ export default {
 		"BankList",
 		"AccountTypes",
 		"WithDrawSettings",
-		"currencySymbol"
+		"currencySymbol",
+		"allowPixRegister",
+		
 	],
 	data() {
 		return {
@@ -302,12 +304,7 @@ export default {
                                                 <div class="form-group">
                                                     <!--Select transaction type filter-->
                                                     <label for="giveName">{{trans('withdrawals.status') }}</label>
-                                                  <select
-                                                      v-model="status"
-                                                      name=""
-                                                      class="select form-control"
-                                                      data-test="select_status"
-                                                  >
+                                                    <select v-model="status" name="" class="select form-control" data-test="select_status">
 														<option value="0" selected="selected"></option>
                                                         <option value="requested">{{trans('withdrawals.withdrawal_requested') }}</option>
 														<option value="awaiting_return">{{trans('withdrawals.awaiting_return') }}</option>
@@ -341,13 +338,7 @@ export default {
 										</div>
 
                                         <div v-if="Enviroment != 'admin'">
-                                            <button
-                                                v-show="with_draw_settings.with_draw_enabled == true"
-                                                v-on:click="showModalRequestWithdraw"
-                                                class="btn btn-info"
-                                                type="button"
-                                                data-test="insert_transaction"
-                                            >
+                                            <button v-show="with_draw_settings.with_draw_enabled == true" v-on:click="showModalRequestWithdraw" class="btn btn-info" type="button" data-test="insert_transaction">
                                                 <i class="fa fa-money"></i> {{ trans('withdrawals.request_withdraw') }}
                                             </button>
                                             <div>
@@ -370,14 +361,19 @@ export default {
 		</div>
 		<div class="col-lg-12" v-if="!isEmpty(withdrawals_report.data)">
 			<div class="card">
-				<div class="card-block table_wrapper">
-					<div class="card-block table_scroll">
+				<div class="card-block">
+					<div class="card-block">
 						<table class="table table-bordered">
 							<tr>
                                 <th>{{ trans("withdrawals.id") }}</th>
 
                                 <th>{{ trans("withdrawals.name") }}</th>
                                 <th>{{ trans("withdrawals.email") }}</th>
+
+								
+								<th v-if="allowPixRegister == 1">{{ trans("withdrawals.type_pix") }}</th>
+                                <th v-if="allowPixRegister == 1">{{ trans("withdrawals.key_pix") }}</th>
+
                                 <th>{{ trans("withdrawals.bank") }}</th>
                                 <th>{{ trans("withdrawals.agency") }}</th>
                                 <th>{{ trans("withdrawals.account") }}</th>
@@ -396,7 +392,11 @@ export default {
                                 <td v-if="entry.email">{{ entry.email }}</td>
                                 <td v-else-if="entry.user_email">{{ entry.user_email }}</td>
                                 <td v-else-if="entry.provider_email">{{ entry.provider_email }}</td>
-                                <td v-else>Email Não encontrado</td>
+                                <td v-else>{{ trans("withdrawals.email_not_found") }}</td>
+
+								<td v-if="allowPixRegister == 1">{{ entry.type_pix }}</td>
+                                <td v-if="allowPixRegister == 1">{{ entry.key_pix }}</td>
+
                                 <td>{{ entry.bank }}</td>
                                 <td>{{ entry.agency + "-" + entry.agency_digit }}</td>
                                 <td>{{ entry.account + "-" + entry.account_digit }}</td>
@@ -411,7 +411,7 @@ export default {
 										style="cursor: pointer; color: red" 
 										v-on:click="showModalErrorMsg(entry.error_msg)"
 									>
-										Ver erro
+										{{trans ("withdrawals.see_error")}}
 									</a>
 								</td>
 
@@ -433,15 +433,15 @@ export default {
 											 	class="dropdown-item" 
 												style="cursor: pointer;" 
 												v-on:click="showModalConfirmWithdraw(entry.id)"
-                        data-test="confirm_withdraw"
-                      >
+												data-test="confirm_withdraw"
+											>
 												{{ trans('withdrawals.confirm') }}
 											</a>
 											<a											 	 
 											 	class="dropdown-item" 
 												style="cursor: pointer;" 
 												v-on:click="showModalRejectWithdraw(entry.id)"
-                        data-test="reject_withdraw"
+												data-test="reject_withdraw"
 											>
 												{{ trans('withdrawals.reject') }}
 											</a>
@@ -451,20 +451,17 @@ export default {
 							</tr>
 						</table>
 
-
-
-
 						 <!-- modal -->
 						<div v-if="Enviroment == 'admin'" class="modal" :id="'modalConfirmWithdraw'" tabindex="-1" role="dialog" aria-labelledby="modalmodalConfirmWithdrawLabel">
 							<div class="modal-dialog" role="document">
 								<div class="modal-content">
 									<div class="modal-header">
-										<h4 class="modal-title">Dar baixa no saque</h4>
+										<h4 class="modal-title">{{ trans('withdrawals.drop_the_withdrawal') }}</h4>
 										<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
 									</div>
 									<div class="modal-body">
 										<form id="modalForm">
-											<label for="confirm_withdraw_picture">Envie o comprovante de transferência</label>
+											<label for="confirm_withdraw_picture">{{ trans('withdrawals.send_proof_of_transfer') }}</label>
 											<input 
 												type="file" 
 												:id="'file'" 
@@ -476,19 +473,12 @@ export default {
 											
 											<br>
 											
-											<label for="withdraw_date">Data da transferência:</label>
+											<label for="withdraw_date">{{ trans('withdrawals.transfer_date') }}</label>
 											<input type="date" v-model="confirm_withdraw_date" id="withdraw_date" name="withdraw_date">
 											
 											<br>
 
-                      <button
-                          type="button"
-                          v-on:click="confirmWithdraw()"
-                          class="btn btn-success right"
-                          data-test="modal_confirm_button_send"
-                      >
-                        Enviar
-                      </button>
+											<button type="button" v-on:click="confirmWithdraw()" class="btn btn-success right" data-test="modal_confirm_button_send">{{ trans("withdrawals.send") }}</button>
 											
 										</form>
 									</div>
@@ -503,14 +493,14 @@ export default {
 							<div class="modal-dialog" role="document">
 								<div class="modal-content">
 									<div class="modal-header">
-										<h4 class="modal-title">Rejeitar saque</h4>
+										<h4 class="modal-title">{{ trans('withdrawals.reject_withdrawal') }}</h4>
 										<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
 									</div>
 									<div class="modal-body">
 										<form id="modalForm">
-											<label for="confirm_withdraw_picture">Você tem certeza que deseja rejeitar essa solicitação de saque?</label>
+											<label for="confirm_withdraw_picture">{{ trans('withdrawals.confirm_withdraw_picture') }}</label>
 											<br>
-											<button type="button" v-on:click="rejectWithdraw()" class="btn btn-success right">Enviar</button>
+											<button type="button" v-on:click="rejectWithdraw()" class="btn btn-success right">{{ trans("withdrawals.send") }}</button>											
 										</form>
 									</div>
 									
@@ -519,14 +509,12 @@ export default {
 						</div>
 						<!-- Fim do modal de rejeitar saque -->
 
-
-
 						 <!-- modal error msg -->
 						<div class="modal" :id="'modalErrorMsg'" tabindex="-1" role="dialog" aria-labelledby="modalmodalErrorMsgLabel">
 							<div class="modal-dialog" role="document">
 								<div class="modal-content">
 									<div class="modal-header">
-										<h4 class="modal-title">Motivo do Erro ao realizar saque</h4>
+										<h4 class="modal-title">{{ trans('withdrawals.confirm_withdraw_picture') }}</h4>
 										<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
 									</div>
 									<div class="modal-body">
@@ -544,11 +532,11 @@ export default {
 					<pagination :data="withdrawals_report" @pagination-change-page="filterWithdrawals"></pagination>
 				</div>
 			</div>
+			
 		</div>
 	</div>
+	
 </template>
-
-
 <style lang="scss" scoped>
 
 .table_wrapper table {
