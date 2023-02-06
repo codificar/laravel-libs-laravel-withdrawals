@@ -34,7 +34,8 @@ return array(
 	'no'							=> 'Não',
 	'success_set_withdrawals'		=> 'Configurações de saque CNAB salvas com sucesso.',
 	'failed_set_withdrawals'		=> 'Ocorreu um erro ao salvar',
-
+	'success_refuse_withdrawals'	=> 'Rejeição do saque confirmada.',
+	
 	'error'							=> 'Ocorreu um erro',
 	'success_confirm_withdrawals'	=> 'Baixa do saque confirmada.',
 

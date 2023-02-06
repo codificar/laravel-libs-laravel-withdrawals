@@ -223,7 +223,7 @@ export default {
 				$('#modalRejectWithdraw').modal('hide');
 
 				if (response.data.success) {
-					this.reloadPageWithMessage(this.trans("withdrawals.success_confirm_withdrawals"));
+					this.reloadPageWithMessage(this.trans("withdrawals.success_refuse_withdrawals"));
 				} else {
 					this.showErrorMsg(response.data.errors);
 				}
@@ -304,7 +304,7 @@ export default {
                                                 <div class="form-group">
                                                     <!--Select transaction type filter-->
                                                     <label for="giveName">{{trans('withdrawals.status') }}</label>
-                                                    <select v-model="status" name="" class="select form-control">
+                                                    <select v-model="status" name="" class="select form-control" data-test="select_status">
 														<option value="0" selected="selected"></option>
                                                         <option value="requested">{{trans('withdrawals.withdrawal_requested') }}</option>
 														<option value="awaiting_return">{{trans('withdrawals.awaiting_return') }}</option>
@@ -338,7 +338,7 @@ export default {
 										</div>
 
                                         <div v-if="Enviroment != 'admin'">
-                                            <button v-show="with_draw_settings.with_draw_enabled == true" v-on:click="showModalRequestWithdraw" class="btn btn-info" type="button">
+                                            <button v-show="with_draw_settings.with_draw_enabled == true" v-on:click="showModalRequestWithdraw" class="btn btn-info" type="button" data-test="insert_transaction">
                                                 <i class="fa fa-money"></i> {{ trans('withdrawals.request_withdraw') }}
                                             </button>
                                             <div>
@@ -433,6 +433,7 @@ export default {
 											 	class="dropdown-item" 
 												style="cursor: pointer;" 
 												v-on:click="showModalConfirmWithdraw(entry.id)"
+												data-test="confirm_withdraw"
 											>
 												{{ trans('withdrawals.confirm') }}
 											</a>
@@ -440,6 +441,7 @@ export default {
 											 	class="dropdown-item" 
 												style="cursor: pointer;" 
 												v-on:click="showModalRejectWithdraw(entry.id)"
+												data-test="reject_withdraw"
 											>
 												{{ trans('withdrawals.reject') }}
 											</a>
@@ -476,7 +478,7 @@ export default {
 											
 											<br>
 
-											<button type="button" v-on:click="confirmWithdraw()" class="btn btn-success right">{{ trans("withdrawals.send") }}</button>
+											<button type="button" v-on:click="confirmWithdraw()" class="btn btn-success right" data-test="modal_confirm_button_send">{{ trans("withdrawals.send") }}</button>
 											
 										</form>
 									</div>
@@ -530,6 +532,18 @@ export default {
 					<pagination :data="withdrawals_report" @pagination-change-page="filterWithdrawals"></pagination>
 				</div>
 			</div>
+			
 		</div>
 	</div>
+	
 </template>
+<style lang="scss" scoped>
+
+.table_wrapper table {
+  width: 100%;
+}
+
+.table_scroll {
+  overflow: auto;
+}
+</style>

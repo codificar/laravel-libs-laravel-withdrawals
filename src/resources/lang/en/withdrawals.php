@@ -37,7 +37,7 @@ return array(
 
 	'error'							=> 'An error has occurred',
 	'success_confirm_withdrawals'	=> 'Withdrawal withdrawal confirmed.',
-
+	'success_refuse_withdrawals'	=> 'Withdrawal rejection confirmed.',
 
 	'value'							=> 'Value',
 	'value_required'				=> 'You must enter a value',
