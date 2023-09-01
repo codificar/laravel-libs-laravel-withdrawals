@@ -157,5 +157,8 @@ return array(
 	'with_draw_min_limit'			=> 'Minimum withdrawal amount',
 	'with_draw_max_limit'			=> 'Maximum withdrawal amount',
 	'rejected'						=> 'Rejected',
-	'reject'						=> 'Reject'
+	'reject'						=> 'Reject',
+	'requested'						=> 'Requested',
+	'awaiting_arq_return'			=> 'Awaiting Return File',
+	'show_error'					=> 'Show error'
 );

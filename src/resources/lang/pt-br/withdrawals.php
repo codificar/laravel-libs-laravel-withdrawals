@@ -158,5 +158,8 @@ return array(
 	'with_draw_min_limit'			=> 'Valor mínimo para saque',
 	'with_draw_max_limit'			=> 'Valor máximo para saque',
 	'rejected'						=> 'Rejeitado',
-	'reject'						=> 'Rejeitar'
+	'reject'						=> 'Rejeitar',
+	'requested'						=> 'Solicitado',
+	'awaiting_arq_return'			=> 'Aguardando arq. retorno',
+	'show_error'					=> 'Ver erro'
 );

@@ -402,16 +402,28 @@ export default {
                                 <td>{{ entry.account + "-" + entry.account_digit }}</td>
                                 <td>{{ entry.document }}</td>
                                 <td>
-									<p v-if="entry.type == 'requested'">Solicitado</p>
-									<p v-if="entry.type == 'awaiting_return'">Aguardando arq. retorno</p>
-									<p v-if="entry.type == 'concluded'">Concluído</p>
-									<p v-if="entry.type == 'rejected'">Rejeitado</p>
+									<span v-if="entry.type == 'requested'"
+										class="badge bg-info">
+										{{ trans('withdrawals.requested') }}
+									</span>
+									<span v-if="entry.type == 'awaiting_return'"
+										class="badge bg-secondary" >
+										{{ trans('withdrawals.awaiting_arq_return') }}
+									</span>
+									<span v-if="entry.type == 'concluded'"
+										class="badge bg-success" >
+										{{ trans('withdrawals.concluded') }}
+									</span>
+									<span v-if="entry.type == 'rejected'"
+										class="badge bg-danger" >
+										{{ trans('withdrawals.rejected') }}
+									</span>
 									<a 
 										v-if="entry.type == 'error'"
 										style="cursor: pointer; color: red" 
 										v-on:click="showModalErrorMsg(entry.error_msg)"
 									>
-										{{trans ("withdrawals.see_error")}}
+										{{ trans('withdrawals.show_error') }}
 									</a>
 								</td>
 
@@ -422,13 +434,13 @@ export default {
 								<td><p class="text-success">{{ currency_format(entry.value, currencySymbol) }}</p></td>
 
 								<td v-if="Enviroment == 'admin'">
-									<div class="dropdown">
+									<div v-if="entry.type !== 'concluded' && entry.type !== 'rejected'" class="dropdown">
 										<button class="btn btn-info dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown">
 											{{trans('withdrawals.action') }}
 											<span class="caret"></span>
 										</button>
 
-										<div v-if="entry.type !== 'concluded' && entry.type !== 'rejected'" class="dropdown-menu dropdown-menu-right" role="menu" aria-labelledby="dropdownMenu1">
+										<div class="dropdown-menu dropdown-menu-right" role="menu" aria-labelledby="dropdownMenu1">
 										 	<a											 	 
 											 	class="dropdown-item" 
 												style="cursor: pointer;" 
@@ -446,6 +458,9 @@ export default {
 												{{ trans('withdrawals.reject') }}
 											</a>
 										</div>
+									</div>
+									<div v-else>
+										<p> - </p>
 									</div>
 								</td>
 							</tr>
@@ -532,10 +547,8 @@ export default {
 					<pagination :data="withdrawals_report" @pagination-change-page="filterWithdrawals"></pagination>
 				</div>
 			</div>
-			
 		</div>
 	</div>
-	
 </template>
 <style lang="scss" scoped>
 
