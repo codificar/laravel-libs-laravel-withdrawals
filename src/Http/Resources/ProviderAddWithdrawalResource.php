@@ -88,7 +88,7 @@ class ProviderAddWithdrawalResource extends JsonResource {
             $value = -$value;
 
             // Add withdraw debit in Finance table
-            $returnWithdraw = Finance::createWithDrawRequest($ledger->id, $value, $bankAccountId, null);
+            $returnWithdraw = Finance::createWithDrawRequest($ledger->id, $value, $bankAccountId, null, Finance::WITHDRAW_REQUESTED);
             
             // Add withdraw Tax debit in Finance table
             $returnTax = null;
