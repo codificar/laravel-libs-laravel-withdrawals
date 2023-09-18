@@ -304,15 +304,20 @@ class Withdrawals extends Eloquent
             $query->addSelect('user.email as email')
                 ->join('user', 'ledger.user_id', '=', 'user.id');
         } elseif ($enviroment == 'provider') {
-            $query->addSelect('provider.email as email')
+            $query->addSelect('provider.email as email', 'provider.type_pix as type_pix', 'provider.key_pix as key_pix')
                 ->join('provider', 'ledger.provider_id', '=', 'provider.id');
         } elseif ($enviroment == 'admin') {
-            $query->addSelect('user.email as user_email', 'provider.email as provider_email')
+            $query->addSelect('user.email as user_email', 'provider.email as provider_email', 'provider.type_pix as type_pix', 'provider.key_pix as key_pix')
                 ->leftjoin('user', 'ledger.user_id', '=', 'user.id')
                 ->leftjoin('provider', 'ledger.provider_id', '=', 'provider.id');
         }
 
-        $query->where('finance.reason', '=', 'WITHDRAW')
+        $query->where(function ($query) {
+            $query->where('finance.reason', '=', 'WITHDRAW')
+                ->orWhere('finance.reason', '=', 'WITHDRAW_REJECT')
+                ->orWhere('finance.reason', '=', 'WITHDRAW_REQUESTED');
+        })
+        
 
             //if is provider, so just get the withdraw that provider
             ->when($enviroment == "provider" || $enviroment == "user", function ($query, $model) use ($ledgerId) {
@@ -426,14 +431,12 @@ class Withdrawals extends Eloquent
         $finance_withdraw_tax	= Finance::find($withdraw->finance_withdraw_tax_id);
         $bank_account			= LedgerBankAccount::where('ledger_id', $finance_withdraw->ledger_id)->first();
 
-        $finance_withdraw_id		= $withdraw->finance_withdraw_id;
-        $finance_withdraw_tax_id	= $withdraw->finance_withdraw_tax_id;
-
         $withdraw->finance_withdraw_id = Finance::createWithDrawRequest(
             $finance_withdraw->ledger_id,
             $finance_withdraw->value * -1,
             $bank_account->id,
-            \Auth::id()
+            \Auth::id(),
+            \Finance::WITHDRAW_REJECT
         )->id;
 
         if ($finance_withdraw_tax) {
@@ -441,12 +444,11 @@ class Withdrawals extends Eloquent
                 $finance_withdraw_tax->ledger_id,
                 $finance_withdraw_tax->value * -1,
                 $bank_account->id,
-                \Auth::id()
+                \Auth::id(),
+                \Finance::WITHDRAW_REJECT
             )->id;
         }
 
         $withdraw->save();
-
-        Finance::destroy([$finance_withdraw_id, $finance_withdraw_tax_id]);
     }
 }
