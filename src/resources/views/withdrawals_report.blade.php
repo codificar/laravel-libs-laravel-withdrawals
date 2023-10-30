@@ -74,7 +74,7 @@
 		account-types="{{ json_encode($account_types) }}"
 		with-draw-settings="{{ json_encode($withdrawsettings) }}"
 		currency-symbol="{{\Settings::getCurrency()}}"
-		allow-pix-register="{{ $has_type_key_pix ? Settings::getAllowPixRegister()}} : 0">
+		allow-pix-register="{{ $has_type_key_pix ? Settings::getAllowPixRegister() : 0 }}">
 	</withdrawalsreport>
 	
 </div>
