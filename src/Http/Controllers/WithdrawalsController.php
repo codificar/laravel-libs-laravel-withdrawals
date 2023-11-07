@@ -6,6 +6,7 @@ use Codificar\Withdrawals\Models\Withdrawals;
 use Codificar\Withdrawals\Models\CnabFiles;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Http\UploadedFile;
 use \Exception as Exception;
 use File;
@@ -642,6 +643,7 @@ class WithdrawalsController extends Controller {
 
         $withDrawSettings = Withdrawals::getWithdrawalsSettings(false);
 
+        $has_type_key_pix = Schema::hasColumn('provider', 'type_pix') && Schema::hasColumn('provider', 'key_pix');
         return View::make('withdrawals::withdrawals_report')
                         ->with([
                             'id' => $enviroment == "provider" ? $id : null,
@@ -655,7 +657,8 @@ class WithdrawalsController extends Controller {
                             'bankaccounts' => isset($provider->ledger->bankAccounts) ? $provider->ledger->bankAccounts : '',
                             'banks' => $banks,
                             'account_types' => $account_types,
-                            'withdrawsettings' => $withDrawSettings
+                            'withdrawsettings' => $withDrawSettings,
+                            'has_type_key_pix' => $has_type_key_pix
         ]);
         
     }
