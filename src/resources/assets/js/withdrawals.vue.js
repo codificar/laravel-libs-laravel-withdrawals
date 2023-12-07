@@ -67,8 +67,14 @@ Vue.prototype.currency_format = (number, currency, intPrecision = 2, chrDecimal 
     
     if(currency == 'GS')
         intPrecision = 0;
+
+    if(currency == 'PYG') {
+        intPrecision = 0;
+        chrDecimal = '';
+        chrThousand = '';
+    }
     
-    return currency + ' ' + Vue.prototype.number_format(number, intPrecision, chrDecimal, chrThousand);
+    return Vue.prototype.number_format(number, intPrecision, chrDecimal, chrThousand);
 }
 
 //Allows localization using trans()
