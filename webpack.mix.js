@@ -12,3 +12,5 @@ let mix = require('laravel-mix');
  */
 
 mix.js('src/resources/assets/js/withdrawals.vue.js', 'public/js').vue();
+
+mix.copy('public/js/withdrawals.vue.js', '../../../public/vendor/codificar/withdrawals/withdrawals.vue.js');
