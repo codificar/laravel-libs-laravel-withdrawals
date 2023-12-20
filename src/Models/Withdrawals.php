@@ -5,6 +5,7 @@ namespace Codificar\Withdrawals\Models;
 use Illuminate\Database\Eloquent\Relations\Model;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\Paginator;
+use Illuminate\Support\Facades\Schema;
 use Carbon\Carbon;
 use Eloquent;
 use Finance;
@@ -300,16 +301,25 @@ class Withdrawals extends Eloquent
             ->join('ledger', 'finance.ledger_id', '=', 'ledger.id')
             ->join('bank', 'ledger_bank_account.bank_id', 'bank.id');
 
-        if ($enviroment == 'user') {
+        if($enviroment == 'user'){
             $query->addSelect('user.email as email')
                 ->join('user', 'ledger.user_id', '=', 'user.id');
-        } elseif ($enviroment == 'provider') {
-            $query->addSelect('provider.email as email', 'provider.type_pix as type_pix', 'provider.key_pix as key_pix')
-                ->join('provider', 'ledger.provider_id', '=', 'provider.id');
-        } elseif ($enviroment == 'admin') {
-            $query->addSelect('user.email as user_email', 'provider.email as provider_email', 'provider.type_pix as type_pix', 'provider.key_pix as key_pix')
-                ->leftjoin('user', 'ledger.user_id', '=', 'user.id')
-                ->leftjoin('provider', 'ledger.provider_id', '=', 'provider.id');
+        } elseif ($enviroment == 'provider' || $enviroment == 'admin') {
+            $selectStatements = ['provider.email as email'];
+            
+            if (Schema::hasColumn('provider', 'type_pix') && Schema::hasColumn('provider', 'key_pix')) {
+                $selectStatements[] = 'provider.type_pix as type_pix';
+                $selectStatements[] = 'provider.key_pix as key_pix';
+            }
+            
+            $query->addSelect($selectStatements);
+        
+            if ($enviroment == 'provider') {
+                $query->join('provider', 'ledger.provider_id', '=', 'provider.id');
+            } else {
+                $query->leftjoin('user', 'ledger.user_id', '=', 'user.id');
+                $query->leftjoin('provider', 'ledger.provider_id', '=', 'provider.id');
+            }
         }
 
         $query->where(function ($query) {
