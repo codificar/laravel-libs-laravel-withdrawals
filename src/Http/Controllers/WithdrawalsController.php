@@ -412,7 +412,7 @@ class WithdrawalsController extends Controller {
                 
 
                     //get file
-                    $cnabFile = utf8_decode($arquivo->getText());
+                    $cnabFile = mb_convert_encoding($arquivo->getText(), 'ISO-8859-1', 'UTF-8');
                         
                     // get nome
                     $file_name = "remessa_id" . $modelCnabFile->id . "_" . date("Y_m_d");
@@ -546,7 +546,7 @@ class WithdrawalsController extends Controller {
 
                 //salva o arquivo de retorno
                 $file_name = "retorno_id" . $cnab_id . "_" . date("Y_m_d") . "_" . rand();
-                $teste = file_put_contents(public_path() . "/uploads/" . $file_name . "." . $extension, utf8_decode($fileContent));
+                $teste = file_put_contents(public_path() . "/uploads/" . $file_name . "." . $extension, mb_convert_encoding($fileContent, 'ISO-8859-1', 'UTF-8'));
                 // Upload to S3
                 $local_url = $file_name . "." . $extension;
                 $s3_url = upload_to_s3($file_name, $local_url);
@@ -896,7 +896,7 @@ class WithdrawalsController extends Controller {
                 trans("libTans::withdrawals.finance_date"),
                 trans("libTans::withdrawals.finance_value")
 			),
-			";"
+			";", '"', "\\"
 		);
 		
 		foreach ($withdrawals as $key => $withdraw) {
@@ -916,7 +916,7 @@ class WithdrawalsController extends Controller {
                     $withdraw->date,
                     currency_format($withdraw->value),
 				),
-				";"
+				";", '"', "\\"
 			);
 		}
 		// Close the pointer file
